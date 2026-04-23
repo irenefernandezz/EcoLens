@@ -1,10 +1,12 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:helloworld/responses/product_response.dart';
 
 class DetailResult extends StatefulWidget {
-  final ProductResponse product; // recibe un producto
+  final ProductResponse product; // producto recibido
 
-  const DetailResult({super.key, required this.product}); // Constructor actualizado
+  const DetailResult({super.key, required this.product});
 
   @override
   State<DetailResult> createState() => _DetailResult();
@@ -12,6 +14,14 @@ class DetailResult extends StatefulWidget {
 
 class _DetailResult extends State<DetailResult> {
 
+  //ingredientes contaminantes
+  final keywordsHigh = ['palm oil', 'beef', 'butter'];
+  final keywordsMedium = ['milk', 'cocoa', 'coffee'];
+  //materiales contaminantes
+  final redMaterials = ['pvc', 'ps', 'polystyrene'];
+
+
+  //Función que relaciona cada nivel del ecoScore con un color
   List<Color> color_eco(String value){
     switch(value.toLowerCase()){
       case 'a': return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
@@ -19,71 +29,80 @@ class _DetailResult extends State<DetailResult> {
       case 'c': return [const Color(0xFFFFB74D), const Color(0xFFF57C00)]; // Naranja
       case 'd': return [const Color(0xFFE57373), const Color(0xFFD32F2F)]; // Rojo
       case 'e': return [const Color(0xFFBA68C8), const Color(0xFF7B1FA2)]; // Morado
+      case "unknown": return[const Color(0xFFC3C3C3), const Color(0xFF7F7F7F)];
       default: return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
     }
   }
 
+  //Función que relaciona cada nivel del novaScore con un color
   List<Color> color_nova(String value){
-    switch(value){
+    switch(value.toLowerCase()){
       case '1': return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
       case '2': return [const Color(0xFFFFEE58), const Color(0xFFFBC02D)]; // Amarillo
       case '3': return [const Color(0xFFFFB74D), const Color(0xFFF57C00)]; // Naranja
       case '4': return [const Color(0xFFE57373), const Color(0xFFD32F2F)]; // Rojo
+      case "unknown": return[const Color(0xFFC3C3C3), const Color(0xFF7F7F7F)];
       default: return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
     }
   }
 
+  //Función que relaciona el número de aditivos con un color
   List<Color> color_adittives(String value){
-    switch(value){
+    switch(value.toLowerCase()){
       case '0' || '1': return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
       case '2' || '3': return [const Color(0xFFFFEE58), const Color(0xFFFBC02D)]; // Amarillo
       case '4' : return [const Color(0xFFFFB74D), const Color(0xFFF57C00)]; // Naranja
+      case "unknown": return[const Color(0xFFC3C3C3), const Color(0xFF7F7F7F)];
       default: return [const Color(0xFFE57373), const Color(0xFFD32F2F)];
     }
   }
 
+  //Función que relaciona el número de ingredientes con aceite de palma con un color
   List<Color> color_palm_oil(String value){
-    switch(value){
+    switch(value.toLowerCase()){
       case '0': return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
       case '1': return [const Color(0xFFFFEE58), const Color(0xFFFBC02D)]; // Amarillo
       case '2' : return [const Color(0xFFFFB74D), const Color(0xFFF57C00)]; // Naranja
+      case "unknown": return[const Color(0xFFC3C3C3), const Color(0xFF7F7F7F)];
       default: return [const Color(0xFFE57373), const Color(0xFFD32F2F)];
     }
   }
 
-  List<Color> color_co2(double value){
-    if (value < 2){
-      return [const Color(0xFF86C28B), const Color(0xFF6DA67A)]; // Verde
-    } else if (value < 5){
-      return [const Color(0xFFFFEE58), const Color(0xFFFBC02D)]; // Amarillo
-    } else {
-      return [const Color(0xFFE57373), const Color(0xFFD32F2F)]; // Rojo
+  //Función que relaciona la cantidad de co2 producido con un color
+  List<Color> color_co2(String value){
+    switch(value.toLowerCase()){
+      case '0' || '1' || '2': return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
+      case '3' || '4' || '5': return [const Color(0xFFFFEE58), const Color(0xFFFBC02D)];
+      case "unknown": return[const Color(0xFFC3C3C3), const Color(0xFF7F7F7F)];
+      default: return [const Color(0xFFE57373), const Color(0xFFD32F2F)];
     }
   }
 
-  List<Color> color_non_recyclable(int value) {
-    if (value == 0) {
-      return [const Color(0xFF86C28B), const Color(0xFF6DA67A)]; // Verde
-    } else if (value <= 2) {
-      return [const Color(0xFFFFEE58), const Color(0xFFFBC02D)]; // Amarillo
-    } else if (value == 3) {
-      return [const Color(0xFFFFB74D), const Color(0xFFF57C00)]; // Naranja
-    } else {
-      return [const Color(0xFFE57373), const Color(0xFFD32F2F)]; // Rojo
+  //Función que relaciona el número de materiales no reciclables con un color
+  List<Color> color_non_recyclable(String value) {
+
+    switch(value.toLowerCase()){
+      case '0': return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
+      case '1' || '2': return [const Color(0xFFFFEE58), const Color(0xFFFBC02D)];
+      case '3': return [const Color(0xFFFFB74D), const Color(0xFFF57C00)];
+      case "unknown": return[const Color(0xFFC3C3C3), const Color(0xFF7F7F7F)];
+      default: return [const Color(0xFFE57373), const Color(0xFFD32F2F)];
     }
   }
 
+  //Función que verifica si un material es contaminante
   bool isRedMaterial(String m) {
-    const red = ['pvc', 'ps', 'polystyrene'];
-    return red.any((e) => m.toLowerCase().contains(e));
+
+    return redMaterials.any((e) => m.toLowerCase().contains(e));
   }
 
+  //Función que verifica los materiales son contaminantes
   TextSpan buildHighlightedMaterials(List<String> materials) {
     List<TextSpan> spans = [];
     for (int i = 0; i < materials.length; i++) {
       final material = materials[i];
       final isLast = i == materials.length - 1;
-      
+
       spans.add(TextSpan(
         text: material + (isLast ? "" : ", "),
         style: TextStyle(
@@ -95,9 +114,8 @@ class _DetailResult extends State<DetailResult> {
     return TextSpan(children: spans);
   }
 
+  //Función que verifica si los ingredientes son contaminante
   TextSpan buildHighlightedIngredients(String text) {
-    final keywordsHigh = ['palm oil', 'beef', 'butter'];
-    final keywordsMedium = ['milk', 'cocoa', 'coffee'];
 
     List<TextSpan> spans = [];
 
@@ -125,6 +143,34 @@ class _DetailResult extends State<DetailResult> {
     return TextSpan(children: spans);
   }
 
+  //Función que calcula el número de contaminantes
+  int highlightedIngredient(String text){
+    var resul = 0;
+
+    for (var word in text.split(' ')) {
+      final lower = word.toLowerCase();
+
+      if (keywordsHigh.any((k) => lower.contains(k))) {
+        resul++;
+      } else if (keywordsMedium.any((k) => lower.contains(k))) {
+        resul++;
+      }
+    }
+
+    return resul;
+  }
+
+  //Función que que calcula el número de materiales contaminantes
+  int highlitedMaterial(List<String> materials){
+    var resul = 0;
+    for (int i = 0; i < materials.length; i++) {
+      final material = materials[i];
+      if(isRedMaterial(material)) resul++;
+    }
+    return resul;
+  }
+
+  //Función que calcula el impacto medioambiental total para un producto
   double calculateScore() {
     double score = 10.0;
 
@@ -156,9 +202,21 @@ class _DetailResult extends State<DetailResult> {
     // Packaging
     if (widget.product.packaging.nonRecyclable > 2) score -= 1;
 
+    var points = highlightedIngredient(widget.product.ingredients_text_en);
+
+    for(int i = 0; i < points; i++){
+      score -= 0.5;
+    }
+
+    var pointsMaterial = highlitedMaterial(widget.product.packaging.materials);
+    for(int i = 0; i < pointsMaterial; i++){
+      score -= 0.5;
+    }
+
     return score.clamp(0, 10);
   }
 
+  //Función que identifica cada impato medioambiental con un color
   Color getScoreColor(double score) {
     if (score >= 7) return const Color(0xFF6DA67A); // Verde
     if (score >= 4) return const Color(0xFFFBC02D); // Amarillo
@@ -169,12 +227,63 @@ class _DetailResult extends State<DetailResult> {
   //Método obligatorio
   @override
   Widget build(BuildContext context) {
-    final ecoColors = color_eco(widget.product.ecoscore_grade);
-    final novaColors = color_nova(widget.product.nova_group.toString());
-    final additiveColors = color_adittives(widget.product.additives_count.toString());
-    final palmOilColors = color_palm_oil(widget.product.palm_oil_count.toString());
-    final co2Colors = color_co2(widget.product.agribalyse.co2Total);
-    final nonRecyclableColors = color_non_recyclable(widget.product.packaging.nonRecyclable);
+
+    //Inicializar la información del porducto extraída de la respuesta de la API y la asignación de colores
+    String ecoScore;
+    if(widget.product.ecoscore_grade == -1) {
+      ecoScore = "UNKNOWN";
+    }
+    else {
+      ecoScore = widget.product.ecoscore_grade;
+    }
+    final ecoColors = color_eco(ecoScore);
+
+    String novaScore;
+    if(widget.product.nova_group == -1) {
+      novaScore = "UNKNOWN";
+    }
+    else {
+      novaScore = widget.product.nova_group.toString();
+    }
+    final novaColors = color_nova(novaScore);
+
+    String additiveScore;
+    if(widget.product.additives_count == -1) {
+      additiveScore = "UNKNOWN";
+    }
+    else {
+      additiveScore = widget.product.additives_count.toString();
+    }
+    final additiveColors = color_adittives(additiveScore);
+
+
+    String palmOilScore;
+    if(widget.product.palm_oil_count == -1) {
+      palmOilScore = "UNKNOWN";
+    }
+    else {
+      palmOilScore = widget.product.palm_oil_count.toString();
+    }
+    final palmOilColors = color_palm_oil(palmOilScore);
+
+    String co2Score;
+    if(widget.product.agribalyse.co2Total == -1) {
+      co2Score = "UNKNOWN";
+    }
+    else {
+      co2Score = widget.product.agribalyse.co2Total.toString();
+    }
+    final co2Color = color_co2(co2Score);
+
+    String nonRecyclableScore;
+    if(widget.product.packaging.nonRecyclable == -1) {
+      nonRecyclableScore = "UNKNOWN";
+    }
+    else {
+      nonRecyclableScore = widget.product.packaging.nonRecyclable.toString();
+    }
+    final nonRecyclableColors = color_non_recyclable(nonRecyclableScore);
+
     final double score = calculateScore();
 
     return Scaffold(
@@ -253,36 +362,42 @@ class _DetailResult extends State<DetailResult> {
                     ],
                   ),
                   const Divider(height: 40, thickness: 3, color: Color(0xff859987)),
-                  _buildInfoRow('Eco-Score', widget.product.ecoscore_grade.toUpperCase(), 
+                  _buildInfoRow('Eco-Score', ecoScore.toUpperCase(),
                       customColors: ecoColors),
-                  _buildInfoRow('Nova Group', widget.product.nova_group.toString(), customColors: novaColors),
-                  _buildInfoRow('Additives', widget.product.additives_count.toString(), customColors: additiveColors),
-                  _buildInfoRow('Palm Oil Count', widget.product.palm_oil_count.toString(), customColors: palmOilColors),
-                  _buildInfoRow('Total Co2 Emissions', widget.product.agribalyse.co2Total.toString(), customColors: co2Colors),
-                  
+                  _buildInfoRow('Nova Group', novaScore, customColors: novaColors),
+                  _buildInfoRow('Additives', additiveScore, customColors: additiveColors),
+                  _buildInfoRow('Palm Oil Count', palmOilScore, customColors: palmOilColors),
+                  _buildInfoRow('Total Co2 Emissions', co2Score, customColors: co2Color),
+
                   const Divider(height: 40, thickness: 3, color: Color(0xff859987)),
                   const Text(
                     'Packaging Information:',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
-                  _buildInfoRow('Non-recyclable materials', widget.product.packaging.nonRecyclable.toString(), customColors: nonRecyclableColors),
+                  _buildInfoRow('Non-recyclable materials',
+                      nonRecyclableScore, customColors: nonRecyclableColors),
                   const SizedBox(height: 5),
                   const Text('Materials list:', style: TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 5),
                   RichText(
                     text: buildHighlightedMaterials(widget.product.packaging.materials),
                   ),
-                  
+
                   const Divider(height: 40, thickness: 2.5, color: Color(0xff859987)),
                   const Text(
                     'Ingredients:',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
-                  RichText(
-                    text: buildHighlightedIngredients(widget.product.ingredients_text),
-                  )
+                  if(widget.product.ingredients_text_en == "")
+                    RichText(
+                      text: buildHighlightedIngredients(widget.product.ingredients_text),
+                    )
+                  else
+                    RichText(
+                      text: buildHighlightedIngredients(widget.product.ingredients_text_en),
+                    )
                 ],
               ),
             ),

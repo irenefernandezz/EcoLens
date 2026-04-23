@@ -22,13 +22,14 @@ class _ThirdScreenState extends State<ThirdScreen> {
     super.dispose();
   }
 
-  // Función de escaneo
+  // Función de escaneo corregida
   Future<void> _onCodeDetected(String code) async {
     try {
-      final rawData = await productService.fetchProduct(code);
-      final product = ProductResponse.fromJson(rawData);
+      // El servicio ya devuelve el objeto mapeado (ProductResponse)
+      final product = await productService.fetchProduct(code);
 
       if (!mounted) return;
+      
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => DetailResult(product: product)),
@@ -36,7 +37,7 @@ class _ThirdScreenState extends State<ThirdScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Product not found. Please, try again')),
+        const SnackBar(content: Text('Product not found. Please, try again')),
       );
     }
   }

@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "951244771062",
+    "project_id": "ecolens-c967b",
+    "storage_bucket": "ecolens-c967b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:951244771062:android:61c535ac61d29e116f26d7",
+        "android_client_info": {
+          "package_name": "es.upm.irene.helloworld"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "951244771062-0bihe6osl704rumuqdtscj2oouac3oth.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "es.upm.irene.helloworld",
+            "certificate_hash": "fc7d79242cdedec3f11a32ba6b382c996a1b7cd6"
+          }
+        },
+        {
+          "client_id": "951244771062-9jv5vr3k02r8jprtglq3pfh1iji32adh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyClIXkL9agd4ShgH1JFGaOWAzmiZ-FLCrc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "951244771062-9jv5vr3k02r8jprtglq3pfh1iji32adh.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "951244771062-tt6absga38oiadh5e5m6c042e8pf9amn.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "es.upm.irene.helloworld"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,4 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:helloworld/screens/profile_screen.dart';
+
+import 'login_screen.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
@@ -24,6 +28,19 @@ class SplashScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 onSelected: (value) {
+                  if (value == 'logout') {
+                    FirebaseAuth.instance.signOut();
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginScreen()),
+                    );
+                  }
+                  else if (value == 'profile') {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                    );
+                  }
                   // Lógica para cada opción
                   print('Opción seleccionada: $value');
                 },
@@ -39,7 +56,7 @@ class SplashScreen extends StatelessWidget {
                     ),
                   ),
                   const PopupMenuItem<String>(
-                    value: 'logout',
+                  value: 'logout',
                     child: Row(
                       children: [
                         Icon(Icons.logout_outlined, color: Colors.black87),

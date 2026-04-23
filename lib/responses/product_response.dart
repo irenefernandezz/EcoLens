@@ -9,6 +9,8 @@ class ProductResponse {
   String ingredients_text;
   String ecoscore_grade;
   int nova_group;
+  String ingredients_text_en;
+
 
  Agribalyse agribalyse;
  Packaging packaging;
@@ -24,6 +26,7 @@ class ProductResponse {
    required this.additives_count,
    required this.palm_oil_count,
    required this.ingredients_text,
+   required this.ingredients_text_en,
    required this.ecoscore_grade,
 });
 
@@ -39,10 +42,11 @@ class ProductResponse {
       name_es: product['product_name_es'] ?? product['product_name'] ?? "",
       brand: product['brands'] ?? "Unknown Brand",
       image_url: product['image_url'] ?? "",
-      nova_group: product['nova_group'] ?? 0,
+      nova_group: product['nova_group'] ?? -1,
       additives_count: product['additives_n'] ?? -1,
       palm_oil_count: product['ingredients_from_or_that_may_be_from_palm_oil_n'] ?? -1,
       ingredients_text: product['ingredients_text'] ?? "",
+      ingredients_text_en: product['ingredients_text_en'] ?? "",
       ecoscore_grade: product['ecoscore_grade'] ?? "",
 
 

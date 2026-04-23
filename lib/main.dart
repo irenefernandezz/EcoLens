@@ -1,9 +1,25 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'database/initDB.dart';
+import 'services/user_service.dart';
+import 'screens/login_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/second_screen.dart';
 import 'screens/third_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicialización de Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Inicialización de la base de datos local
+  await DatabaseHelper.instance.database;
+
   runApp(const MyApp());
 }
 
@@ -14,7 +30,28 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter MAD project',
-      home: MainScreen(),
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            // Buscar al usuario en la bd local
+            return FutureBuilder(
+              future: UserService().findUser(snapshot.data!.email!),
+              builder: (context, userSnapshot) {
+                if (userSnapshot.connectionState == ConnectionState.waiting) {
+                  return const Scaffold(
+                    backgroundColor: Colors.white,
+                    body: Center(child: CircularProgressIndicator(color: Color(0xFF86C28B))),
+                  );
+                }
+                return MainScreen();
+              },
+            );
+          }
+          // Si no está logueado, va a la LoginScreen
+          return const LoginScreen();
+        },
+      ),
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueGrey),
         useMaterial3: true,
@@ -36,7 +73,7 @@ class _MainScreenState extends State<MainScreen> {
     ThirdScreen(),
     // TODO: Add actual screens for Achievements and History
     Center(child: Text('Achievements Screen')),
-    Center(child: Text('History Screen')),
+    HistoryScreen(),
   ];
 
   void _onItemTapped(int index) {
