@@ -18,7 +18,7 @@ class DatabaseHelper {
 
     return openDatabase(
       path,
-      version: 2, // Incrementamos la versión a 2
+      version: 3, // Incrementamos a la versión 3
 
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
@@ -40,7 +40,8 @@ class DatabaseHelper {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           barcode TEXT UNIQUE,
           nombre TEXT,
-          img_url TEXT
+          img_url TEXT,
+          score REAL
         );
       ''');
 
@@ -58,8 +59,11 @@ class DatabaseHelper {
       
       onUpgrade: (db, oldVersion, newVersion) async {
         if (oldVersion < 2) {
-          // Si el usuario ya tenía la v1, añadimos la columna avatar
           await db.execute('ALTER TABLE users ADD COLUMN avatar TEXT');
+        }
+        if (oldVersion < 3) {
+          // Añadimos la columna score a la tabla products en la versión 3
+          await db.execute('ALTER TABLE products ADD COLUMN score REAL DEFAULT 0.0');
         }
       },
     );

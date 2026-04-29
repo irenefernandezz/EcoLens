@@ -3,12 +3,14 @@ class Product {
   final String barcode;
   final String nombre;
   final String imgUrl;
+  final double score;
 
   Product({
     this.id,
     required this.barcode,
     required this.nombre,
     required this.imgUrl,
+    required this.score,
   });
 
   Map<String, dynamic> toMap() {
@@ -17,6 +19,7 @@ class Product {
       'barcode': barcode,
       'nombre': nombre,
       'img_url': imgUrl,
+      'score': score,
     };
   }
 
@@ -26,6 +29,7 @@ class Product {
       barcode: map['barcode'],
       nombre: map['nombre'],
       imgUrl: map['img_url'],
+      score: map['score'],
     );
   }
 }

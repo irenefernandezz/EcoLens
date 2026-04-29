@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:helloworld/models/user.dart';
 import 'package:helloworld/database/initDB.dart';
 
@@ -12,6 +13,9 @@ class UserService {
   UserService._internal();
 
   User? _currentUser;
+  final _userController = StreamController<User?>.broadcast();
+
+  Stream<User?> get userStream => _userController.stream;
 
   User? getCurrentUser() {
     return _currentUser;
@@ -28,8 +32,10 @@ class UserService {
 
     if (users.isNotEmpty) {
       _currentUser = User.fromMap(users.first);
+      _userController.add(_currentUser);
       return _currentUser;
     } else {
+      _userController.add(null);
       return null;
     }
   }
@@ -48,6 +54,7 @@ class UserService {
     );
     
     _currentUser = user;
+    _userController.add(_currentUser);
   }
 
   Future<void> updateUser(User user) async {
@@ -61,6 +68,7 @@ class UserService {
     );
     
     _currentUser = user;
+    _userController.add(_currentUser);
   }
 
   Future<void> deleteUser(User user) async {
@@ -72,5 +80,10 @@ class UserService {
       whereArgs: [user.id],
     );
     _currentUser = null;
+    _userController.add(null);
+  }
+
+  void dispose() {
+    _userController.close();
   }
 }

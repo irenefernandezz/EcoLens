@@ -56,11 +56,58 @@ class ProductResponse {
     );
   }
 
+  double calculateTotalScore() {
+    double score = 10.0;
+
+    // 1. EcoScore Grade
+    switch (ecoscore_grade) {
+      case 'a': score -= 0; break;
+      case 'b': score -= 1; break;
+      case 'c': score -= 2; break;
+      case 'd': score -= 3; break;
+      case 'e': score -= 4; break;
+    }
+
+    // 2. CO2 Emissions
+    if (agribalyse.co2Total > 5) score -= 2;
+    else if (agribalyse.co2Total > 2) score -= 1;
+
+    // 3. Nova Group (Grado de procesamiento)
+    if (nova_group >= 4) score -= 2;
+    else if (nova_group == 3) score -= 1;
+
+    // 4. Palm oil & Additives
+    if (palm_oil_count > 0) score -= 1;
+    if (additives_count > 5) score -= 2;
+    else if (additives_count > 0) score -= 1;
+
+    // 5. Packaging impact
+    if (packaging.nonRecyclable > 2) score -= 1;
+
+    // 6. Ingredientes específicos (Basado en tu lógica de DetailResult)
+    final keywordsHigh = ['palm oil', 'beef', 'butter'];
+    final keywordsMedium = ['milk', 'cocoa', 'coffee'];
+    
+    String textToSearch = (ingredients_text_en.isNotEmpty ? ingredients_text_en : ingredients_text).toLowerCase();
+    for (var word in textToSearch.split(' ')) {
+      if (keywordsHigh.any((k) => word.contains(k))) score -= 0.5;
+      else if (keywordsMedium.any((k) => word.contains(k))) score -= 0.3;
+    }
+
+    // 7. Materiales específicos
+    final redMaterials = ['pvc', 'ps', 'polystyrene'];
+    for (var material in packaging.materials) {
+      if (redMaterials.any((m) => material.toLowerCase().contains(m))) {
+        score -= 0.5;
+      }
+    }
+
+    return score.clamp(0.0, 10.0);
+  }
 }
 
 class Agribalyse {
   double co2Total;
-
   double co2Agriculture;
   double co2Packaging;
   double co2Transport;
@@ -80,7 +127,6 @@ class Agribalyse {
       if (value is String) return double.tryParse(value) ?? -1;
       return -1;
     }
-
     return Agribalyse(
       co2Total: parseDouble(json['co2_total']),
       co2Agriculture: parseDouble(json['co2_agriculture']),
@@ -104,7 +150,6 @@ class Packaging {
 
   factory Packaging.fromJson(Map<String, dynamic> json) {
     final packagings = json['packagings'] as List? ?? [];
-
     List<String> materialsList = packagings
         .map((p) => p['material']?.toString() ?? "unknown")
         .toList();
@@ -117,4 +162,3 @@ class Packaging {
     );
   }
 }
-

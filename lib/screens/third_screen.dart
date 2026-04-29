@@ -22,10 +22,8 @@ class _ThirdScreenState extends State<ThirdScreen> {
     super.dispose();
   }
 
-  // Función de escaneo corregida
   Future<void> _onCodeDetected(String code) async {
     try {
-      // El servicio ya devuelve el objeto mapeado (ProductResponse)
       final product = await productService.fetchProduct(code);
 
       if (!mounted) return;

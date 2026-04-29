@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:helloworld/responses/product_response.dart';
 
@@ -13,90 +11,118 @@ class DetailResult extends StatefulWidget {
 }
 
 class _DetailResult extends State<DetailResult> {
-
-  //ingredientes contaminantes
+  // ingredientes contaminantes
   final keywordsHigh = ['palm oil', 'beef', 'butter'];
   final keywordsMedium = ['milk', 'cocoa', 'coffee'];
-  //materiales contaminantes
+  // materiales contaminantes
   final redMaterials = ['pvc', 'ps', 'polystyrene'];
 
-
-  //Función que relaciona cada nivel del ecoScore con un color
-  List<Color> color_eco(String value){
-    switch(value.toLowerCase()){
-      case 'a': return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
-      case 'b': return [const Color(0xFFFFEE58), const Color(0xFFFBC02D)]; // Amarillo
-      case 'c': return [const Color(0xFFFFB74D), const Color(0xFFF57C00)]; // Naranja
-      case 'd': return [const Color(0xFFE57373), const Color(0xFFD32F2F)]; // Rojo
-      case 'e': return [const Color(0xFFBA68C8), const Color(0xFF7B1FA2)]; // Morado
-      case "unknown": return[const Color(0xFFC3C3C3), const Color(0xFF7F7F7F)];
-      default: return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
+  // Función que relaciona cada nivel del ecoScore con un color
+  List<Color> color_eco(String value) {
+    switch (value.toLowerCase()) {
+      case 'a':
+        return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
+      case 'b':
+        return [const Color(0xFFFFEE58), const Color(0xFFFBC02D)]; // Amarillo
+      case 'c':
+        return [const Color(0xFFFFB74D), const Color(0xFFF57C00)]; // Naranja
+      case 'd':
+        return [const Color(0xFFE57373), const Color(0xFFD32F2F)]; // Rojo
+      case 'e':
+        return [const Color(0xFFBA68C8), const Color(0xFF7B1FA2)]; // Morado
+      case "unknown":
+        return [const Color(0xFFC3C3C3), const Color(0xFF7F7F7F)];
+      default:
+        return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
     }
   }
 
-  //Función que relaciona cada nivel del novaScore con un color
-  List<Color> color_nova(String value){
-    switch(value.toLowerCase()){
-      case '1': return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
-      case '2': return [const Color(0xFFFFEE58), const Color(0xFFFBC02D)]; // Amarillo
-      case '3': return [const Color(0xFFFFB74D), const Color(0xFFF57C00)]; // Naranja
-      case '4': return [const Color(0xFFE57373), const Color(0xFFD32F2F)]; // Rojo
-      case "unknown": return[const Color(0xFFC3C3C3), const Color(0xFF7F7F7F)];
-      default: return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
+  // Función que relaciona cada nivel del novaScore con un color
+  List<Color> color_nova(String value) {
+    switch (value.toLowerCase()) {
+      case '1':
+        return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
+      case '2':
+        return [const Color(0xFFFFEE58), const Color(0xFFFBC02D)]; // Amarillo
+      case '3':
+        return [const Color(0xFFFFB74D), const Color(0xFFF57C00)]; // Naranja
+      case '4':
+        return [const Color(0xFFE57373), const Color(0xFFD32F2F)]; // Rojo
+      case "unknown":
+        return [const Color(0xFFC3C3C3), const Color(0xFF7F7F7F)];
+      default:
+        return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
     }
   }
 
-  //Función que relaciona el número de aditivos con un color
-  List<Color> color_adittives(String value){
-    switch(value.toLowerCase()){
-      case '0' || '1': return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
-      case '2' || '3': return [const Color(0xFFFFEE58), const Color(0xFFFBC02D)]; // Amarillo
-      case '4' : return [const Color(0xFFFFB74D), const Color(0xFFF57C00)]; // Naranja
-      case "unknown": return[const Color(0xFFC3C3C3), const Color(0xFF7F7F7F)];
-      default: return [const Color(0xFFE57373), const Color(0xFFD32F2F)];
+  // Función que relaciona el número de aditivos con un color
+  List<Color> color_adittives(String value) {
+    switch (value.toLowerCase()) {
+      case '0' || '1':
+        return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
+      case '2' || '3':
+        return [const Color(0xFFFFEE58), const Color(0xFFFBC02D)]; // Amarillo
+      case '4':
+        return [const Color(0xFFFFB74D), const Color(0xFFF57C00)]; // Naranja
+      case "unknown":
+        return [const Color(0xFFC3C3C3), const Color(0xFF7F7F7F)];
+      default:
+        return [const Color(0xFFE57373), const Color(0xFFD32F2F)];
     }
   }
 
-  //Función que relaciona el número de ingredientes con aceite de palma con un color
-  List<Color> color_palm_oil(String value){
-    switch(value.toLowerCase()){
-      case '0': return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
-      case '1': return [const Color(0xFFFFEE58), const Color(0xFFFBC02D)]; // Amarillo
-      case '2' : return [const Color(0xFFFFB74D), const Color(0xFFF57C00)]; // Naranja
-      case "unknown": return[const Color(0xFFC3C3C3), const Color(0xFF7F7F7F)];
-      default: return [const Color(0xFFE57373), const Color(0xFFD32F2F)];
+  // Función que relaciona el número de ingredientes con aceite de palma con un color
+  List<Color> color_palm_oil(String value) {
+    switch (value.toLowerCase()) {
+      case '0':
+        return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
+      case '1':
+        return [const Color(0xFFFFEE58), const Color(0xFFFBC02D)]; // Amarillo
+      case '2':
+        return [const Color(0xFFFFB74D), const Color(0xFFF57C00)]; // Naranja
+      case "unknown":
+        return [const Color(0xFFC3C3C3), const Color(0xFF7F7F7F)];
+      default:
+        return [const Color(0xFFE57373), const Color(0xFFD32F2F)];
     }
   }
 
-  //Función que relaciona la cantidad de co2 producido con un color
-  List<Color> color_co2(String value){
-    switch(value.toLowerCase()){
-      case '0' || '1' || '2': return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
-      case '3' || '4' || '5': return [const Color(0xFFFFEE58), const Color(0xFFFBC02D)];
-      case "unknown": return[const Color(0xFFC3C3C3), const Color(0xFF7F7F7F)];
-      default: return [const Color(0xFFE57373), const Color(0xFFD32F2F)];
+  // Función que relaciona la cantidad de co2 producido con un color
+  List<Color> color_co2(String value) {
+    switch (value.toLowerCase()) {
+      case '0' || '1' || '2':
+        return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
+      case '3' || '4' || '5':
+        return [const Color(0xFFFFEE58), const Color(0xFFFBC02D)];
+      case "unknown":
+        return [const Color(0xFFC3C3C3), const Color(0xFF7F7F7F)];
+      default:
+        return [const Color(0xFFE57373), const Color(0xFFD32F2F)];
     }
   }
 
-  //Función que relaciona el número de materiales no reciclables con un color
+  // Función que relaciona el número de materiales no reciclables con un color
   List<Color> color_non_recyclable(String value) {
-
-    switch(value.toLowerCase()){
-      case '0': return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
-      case '1' || '2': return [const Color(0xFFFFEE58), const Color(0xFFFBC02D)];
-      case '3': return [const Color(0xFFFFB74D), const Color(0xFFF57C00)];
-      case "unknown": return[const Color(0xFFC3C3C3), const Color(0xFF7F7F7F)];
-      default: return [const Color(0xFFE57373), const Color(0xFFD32F2F)];
+    switch (value.toLowerCase()) {
+      case '0':
+        return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
+      case '1' || '2':
+        return [const Color(0xFFFFEE58), const Color(0xFFFBC02D)];
+      case '3':
+        return [const Color(0xFFFFB74D), const Color(0xFFF57C00)];
+      case "unknown":
+        return [const Color(0xFFC3C3C3), const Color(0xFF7F7F7F)];
+      default:
+        return [const Color(0xFFE57373), const Color(0xFFD32F2F)];
     }
   }
 
-  //Función que verifica si un material es contaminante
+  // Función que verifica si un material es contaminante
   bool isRedMaterial(String m) {
-
     return redMaterials.any((e) => m.toLowerCase().contains(e));
   }
 
-  //Función que verifica los materiales son contaminantes
+  // Función que verifica los materiales son contaminantes
   TextSpan buildHighlightedMaterials(List<String> materials) {
     List<TextSpan> spans = [];
     for (int i = 0; i < materials.length; i++) {
@@ -107,16 +133,16 @@ class _DetailResult extends State<DetailResult> {
         text: material + (isLast ? "" : ", "),
         style: TextStyle(
           color: isRedMaterial(material) ? Colors.red : Colors.black,
-          fontWeight: isRedMaterial(material) ? FontWeight.bold : FontWeight.normal,
+          fontWeight:
+              isRedMaterial(material) ? FontWeight.bold : FontWeight.normal,
         ),
       ));
     }
     return TextSpan(children: spans);
   }
 
-  //Función que verifica si los ingredientes son contaminante
+  // Función que verifica si los ingredientes son contaminante
   TextSpan buildHighlightedIngredients(String text) {
-
     List<TextSpan> spans = [];
 
     for (var word in text.split(' ')) {
@@ -143,148 +169,66 @@ class _DetailResult extends State<DetailResult> {
     return TextSpan(children: spans);
   }
 
-  //Función que calcula el número de contaminantes
-  int highlightedIngredient(String text){
-    var resul = 0;
-
-    for (var word in text.split(' ')) {
-      final lower = word.toLowerCase();
-
-      if (keywordsHigh.any((k) => lower.contains(k))) {
-        resul++;
-      } else if (keywordsMedium.any((k) => lower.contains(k))) {
-        resul++;
-      }
-    }
-
-    return resul;
-  }
-
-  //Función que que calcula el número de materiales contaminantes
-  int highlitedMaterial(List<String> materials){
-    var resul = 0;
-    for (int i = 0; i < materials.length; i++) {
-      final material = materials[i];
-      if(isRedMaterial(material)) resul++;
-    }
-    return resul;
-  }
-
-  //Función que calcula el impacto medioambiental total para un producto
-  double calculateScore() {
-    double score = 10.0;
-
-    // EcoScore
-    switch (widget.product.ecoscore_grade.toLowerCase()) {
-      case 'a': score -= 0; break;
-      case 'b': score -= 1; break;
-      case 'c': score -= 2; break;
-      case 'd': score -= 3; break;
-      case 'e': score -= 4; break;
-    }
-
-    // CO2
-    final co2 = widget.product.agribalyse.co2Total;
-    if (co2 > 5) score -= 2;
-    else if (co2 > 2) score -= 1;
-
-    // Nova (ultraprocesado)
-    if (widget.product.nova_group >= 4) score -= 2;
-    else if (widget.product.nova_group == 3) score -= 1;
-
-    // Palm oil
-    if (widget.product.palm_oil_count > 0) score -= 1;
-
-    // Additives
-    if (widget.product.additives_count > 5) score -= 2;
-    else if (widget.product.additives_count > 0) score -= 1;
-
-    // Packaging
-    if (widget.product.packaging.nonRecyclable > 2) score -= 1;
-
-    var points = highlightedIngredient(widget.product.ingredients_text_en);
-
-    for(int i = 0; i < points; i++){
-      score -= 0.5;
-    }
-
-    var pointsMaterial = highlitedMaterial(widget.product.packaging.materials);
-    for(int i = 0; i < pointsMaterial; i++){
-      score -= 0.5;
-    }
-
-    return score.clamp(0, 10);
-  }
-
-  //Función que identifica cada impato medioambiental con un color
+  // Función que identifica cada impato medioambiental con un color
   Color getScoreColor(double score) {
     if (score >= 7) return const Color(0xFF6DA67A); // Verde
     if (score >= 4) return const Color(0xFFFBC02D); // Amarillo
     return const Color(0xFFE57373); // Rojo
   }
 
-
-  //Método obligatorio
+  // Método obligatorio
   @override
   Widget build(BuildContext context) {
-
-    //Inicializar la información del porducto extraída de la respuesta de la API y la asignación de colores
+    // Inicializar la información del porducto extraída de la respuesta de la API y la asignación de colores
     String ecoScore;
-    if(widget.product.ecoscore_grade == -1) {
+    if (widget.product.ecoscore_grade == "-1" || widget.product.ecoscore_grade == "") {
       ecoScore = "UNKNOWN";
-    }
-    else {
+    } else {
       ecoScore = widget.product.ecoscore_grade;
     }
     final ecoColors = color_eco(ecoScore);
 
     String novaScore;
-    if(widget.product.nova_group == -1) {
+    if (widget.product.nova_group == -1) {
       novaScore = "UNKNOWN";
-    }
-    else {
+    } else {
       novaScore = widget.product.nova_group.toString();
     }
     final novaColors = color_nova(novaScore);
 
     String additiveScore;
-    if(widget.product.additives_count == -1) {
+    if (widget.product.additives_count == -1) {
       additiveScore = "UNKNOWN";
-    }
-    else {
+    } else {
       additiveScore = widget.product.additives_count.toString();
     }
     final additiveColors = color_adittives(additiveScore);
 
-
     String palmOilScore;
-    if(widget.product.palm_oil_count == -1) {
+    if (widget.product.palm_oil_count == -1) {
       palmOilScore = "UNKNOWN";
-    }
-    else {
+    } else {
       palmOilScore = widget.product.palm_oil_count.toString();
     }
     final palmOilColors = color_palm_oil(palmOilScore);
 
     String co2Score;
-    if(widget.product.agribalyse.co2Total == -1) {
+    if (widget.product.agribalyse.co2Total == -1) {
       co2Score = "UNKNOWN";
-    }
-    else {
+    } else {
       co2Score = widget.product.agribalyse.co2Total.toString();
     }
     final co2Color = color_co2(co2Score);
 
     String nonRecyclableScore;
-    if(widget.product.packaging.nonRecyclable == -1) {
+    if (widget.product.packaging.nonRecyclable == -1) {
       nonRecyclableScore = "UNKNOWN";
-    }
-    else {
+    } else {
       nonRecyclableScore = widget.product.packaging.nonRecyclable.toString();
     }
     final nonRecyclableColors = color_non_recyclable(nonRecyclableScore);
 
-    final double score = calculateScore();
+    final double score = widget.product.calculateTotalScore();
 
     return Scaffold(
       appBar: AppBar(
@@ -328,7 +272,7 @@ class _DetailResult extends State<DetailResult> {
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //nombre del producto
+                    // nombre del producto
                     children: [
                       Expanded(
                         child: Text(
@@ -342,7 +286,7 @@ class _DetailResult extends State<DetailResult> {
                         ),
                       ),
 
-                      //Nota del producto
+                      // Nota del producto
                       Column(
                         children: [
                           Text(
