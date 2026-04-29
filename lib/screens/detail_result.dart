@@ -176,7 +176,6 @@ class _DetailResult extends State<DetailResult> {
     return const Color(0xFFE57373); // Rojo
   }
 
-  // Método obligatorio
   @override
   Widget build(BuildContext context) {
     // Inicializar la información del porducto extraída de la respuesta de la API y la asignación de colores
@@ -231,6 +230,7 @@ class _DetailResult extends State<DetailResult> {
     final double score = widget.product.calculateTotalScore();
 
     return Scaffold(
+      //Barra superior
       appBar: AppBar(
         toolbarHeight: 60,
         leading: Padding(
@@ -255,6 +255,8 @@ class _DetailResult extends State<DetailResult> {
           ),
         ),
       ),
+
+      //Scroll view para poder visualizar todos los productos
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -262,7 +264,6 @@ class _DetailResult extends State<DetailResult> {
               Image.network(
                 widget.product.image_url,
                 height: 250,
-                width: double.infinity,
                 fit: BoxFit.contain,
               ),
             Padding(
@@ -271,7 +272,6 @@ class _DetailResult extends State<DetailResult> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     // nombre del producto
                     children: [
                       Expanded(
@@ -305,7 +305,10 @@ class _DetailResult extends State<DetailResult> {
                       ),
                     ],
                   ),
+
                   const Divider(height: 40, thickness: 3, color: Color(0xff859987)),
+
+                  //Información adicional del producto
                   _buildInfoRow('Eco-Score', ecoScore.toUpperCase(),
                       customColors: ecoColors),
                   _buildInfoRow('Nova Group', novaScore, customColors: novaColors),
@@ -314,6 +317,8 @@ class _DetailResult extends State<DetailResult> {
                   _buildInfoRow('Total Co2 Emissions', co2Score, customColors: co2Color),
 
                   const Divider(height: 40, thickness: 3, color: Color(0xff859987)),
+
+                  //Información sobre el embalaje
                   const Text(
                     'Packaging Information:',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -327,8 +332,9 @@ class _DetailResult extends State<DetailResult> {
                   RichText(
                     text: buildHighlightedMaterials(widget.product.packaging.materials),
                   ),
-
                   const Divider(height: 40, thickness: 2.5, color: Color(0xff859987)),
+
+                  //Información sobre los ingredinetes
                   const Text(
                     'Ingredients:',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

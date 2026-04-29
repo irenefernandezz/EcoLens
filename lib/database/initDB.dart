@@ -2,7 +2,10 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
 class DatabaseHelper {
+  //Singleton
   static final DatabaseHelper instance = DatabaseHelper._init();
+
+  //Base de datos
   static Database? _database;
 
   DatabaseHelper._init();
@@ -14,16 +17,19 @@ class DatabaseHelper {
   }
 
   Future<Database> initDB() async {
+    //Ruta y nombre de la base de datos
     final path = join(await getDatabasesPath(), 'eco_app.db');
 
     return openDatabase(
       path,
-      version: 3, // Incrementamos a la versión 3
+      version: 3, //Cada vez que se cambia una columna se ha de incrementar la versión
 
+      //Activar claves foráneas
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
       },
 
+      //Tablas y atributos
       onCreate: (db, version) async {
         await db.execute('''
         CREATE TABLE users (
@@ -55,16 +61,6 @@ class DatabaseHelper {
           FOREIGN KEY(product_id) REFERENCES products(id)
         );
       ''');
-      },
-      
-      onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 2) {
-          await db.execute('ALTER TABLE users ADD COLUMN avatar TEXT');
-        }
-        if (oldVersion < 3) {
-          // Añadimos la columna score a la tabla products en la versión 3
-          await db.execute('ALTER TABLE products ADD COLUMN score REAL DEFAULT 0.0');
-        }
       },
     );
   }

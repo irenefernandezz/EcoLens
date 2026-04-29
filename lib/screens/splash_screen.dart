@@ -1,84 +1,119 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:helloworld/screens/profile_screen.dart';
 import 'package:helloworld/services/history_service.dart';
 import 'package:helloworld/services/product_service.dart';
 import 'package:helloworld/services/user_service.dart';
 import 'package:helloworld/models/user.dart' as model;
+import '../shared/logout_dialog.dart';
 
 import 'detail_result.dart';
-import 'login_screen.dart';
+import 'package:logger/logger.dart';
 
-class SplashScreen extends StatelessWidget {
+// Configuración de logger
+var logger = Logger(
+  printer: PrettyPrinter(),
+);
+
+//StatefulWidget para evitar operaciones asíncronas con Future en el build
+class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
+
+
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  // Inicializar servicios
+  final historyService = HistoryService();
+  final userService = UserService();
+  final productService = ProductService();
+
+  int _scannedCount = 0; // Variable para guardar el número de productos escaneados
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCount(); //Cargar el número de productos escaneados
+  }
+
+  Future<void> _loadCount() async {
+    final count = await getScannedProducts();
+    if (mounted) {
+      setState(() {
+        _scannedCount = count;
+      });
+    }
+  }
+
+  // Calcula el número de productos escaneados por el usuario
+  Future<int> getScannedProducts() async {
+    final id = userService.getCurrentUser()?.id;
+    if (id != null) {
+      final list = await historyService.getProductsByUser(id);
+      return list.length;
+    } else {
+      return -1;
+    }
+  }
+
+  // Obtener el barcode del último producto escaneado para enlazarlo con el botón
+  Future<String?> getLastScannedProduct() async {
+    final id = userService.getCurrentUser()?.id;
+    if (id != null) {
+      final list = await historyService.getProductsByUser(id);
+      if (list.isNotEmpty) {
+        return list.first.barcode;
+      }
+    }
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
-
-    final historyService = HistoryService();
-    final userService = UserService();
-    final productService = ProductService();
-
-    Future<int> getScannedProducts() async {
-      final id = userService.getCurrentUser()?.id;
-      if(id != null){
-        final list = await historyService.getProductsByUser(id);
-      return list.length;
-      }
-      else {
-        return -1;
-      }
-    }
-
-    Future<String?> getLastScannedProduct() async {
-      final id = userService.getCurrentUser()?.id;
-      if(id != null){
-        final list = await historyService.getProductsByUser(id);
-        return list.first.barcode;
-      }
-      else {
-        return null;
-      }
-    }
-
     return Scaffold(
-      //Para evitar que elementos de la UI interfieran con el tamaño de la pantalla
-      body: SafeArea(
+      body: Center(
+
+        //Stack en lugar de Column para tener una mayor flexibilidad a la hora de posicionar los elementos.
+        //Column = elementos uno debajo de otro
         child: Stack(
           children: [
+
             // Botón arriba a la derecha del perfil del usuario
             Positioned(
+              //Coordenadas exactas
               top: 10,
               right: 10,
+
+              //Se usa StreamBuilder para reflear cambios en tiempo real sobre la foto de perfil, en lugar de llamar a userService.getCurrentUser()
               child: StreamBuilder<model.User?>(
                 stream: userService.userStream,
                 initialData: userService.getCurrentUser(),
                 builder: (context, snapshot) {
                   final user = snapshot.data;
                   final avatarUrl = user?.avatar ?? 'lib/resources/profile.png';
-                  
+
+                  //Popup del botón de perfil
                   return PopupMenuButton<String>(
+                    //Coordenadas
                     offset: const Offset(-40, 70),
+                    //Forma del Popup
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    onSelected: (value) {
+                    onSelected: (value) async {
                       if (value == 'logout') {
-                        FirebaseAuth.instance.signOut();
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => LoginScreen()),
-                        );
-                      }
-                      else if (value == 'profile') {
+                        showLogoutDialog(context);
+                      } else if (value == 'profile') {
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => const ProfileScreen()),
                         );
                       }
-                      // Lógica para cada opción
-                      print('Opción seleccionada: $value');
+                      logger.d('Opción seleccionada: $value');
                     },
+                    //Aspecto de las opciones del popup
                     itemBuilder: (BuildContext context) => [
                       const PopupMenuItem<String>(
                         value: 'profile',
@@ -91,7 +126,7 @@ class SplashScreen extends StatelessWidget {
                         ),
                       ),
                       const PopupMenuItem<String>(
-                      value: 'logout',
+                        value: 'logout',
                         child: Row(
                           children: [
                             Icon(Icons.logout_outlined, color: Colors.black87),
@@ -101,15 +136,16 @@ class SplashScreen extends StatelessWidget {
                         ),
                       ),
                     ],
+                    //Imagen del usuairo con sombra
                     child: Container(
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.grey.withOpacity(0.3), // Menos opacidad para que sea más sutil
+                            color: Colors.grey.withOpacity(0.3),
                             spreadRadius: 0,
-                            blurRadius: 10, // Menos difuminado para que no se expanda tanto
-                            offset: const Offset(0, 5), // Menos desplazamiento
+                            blurRadius: 10,
+                            offset: const Offset(0, 5),
                           ),
                         ],
                       ),
@@ -120,7 +156,7 @@ class SplashScreen extends StatelessWidget {
                       ),
                     ),
                   );
-                }
+                },
               ),
             ),
 
@@ -146,66 +182,47 @@ class SplashScreen extends StatelessWidget {
                     'lib/resources/logo.png',
                     height: 250,
                   ),
+                  const SizedBox(height: 20),
 
                   // Botón último escaneo
-                  const SizedBox(height: 20),
-                    OutlinedButton(
-                      onPressed: () async {
-                        final scannedProducts = await getScannedProducts();
-                          if(scannedProducts > 0){
-                            var barcode =  await getLastScannedProduct();
-                            final fullProduct = await productService.fetchProduct(barcode);
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => DetailResult(product: fullProduct),
-                              ),
-                            );
-
-                          }
-
-                        },
-                      //estilo del botón
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF86C28B), width: 2),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      child: const Text(
-                        'View last product',
-                        style: TextStyle(color: Colors.black),
+                  OutlinedButton(
+                    onPressed: () async {
+                      final barcode = await getLastScannedProduct();
+                      if (barcode != null) {
+                        final lastProduct = await productService.fetchProduct(barcode);
+                        if (mounted) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => DetailResult(product: lastProduct),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0xFF86C28B), width: 2),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
                       ),
                     ),
-
+                    child: const Text(
+                      'View last product',
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ),
 
                   const SizedBox(height: 30),
-                  FutureBuilder<int>(
-                    future: getScannedProducts(), // La función que obtiene el número
-                    builder: (context, snapshot) {
-                      // Mientras carga los datos
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return const CircularProgressIndicator();
-                      }
 
-                      // Si hubo un error
-                      if (snapshot.hasError) {
-                        return const Text('Error loading data');
-                      }
-
-                      // Cuando ya tenemos el resultado
-                      final count = snapshot.data ?? 0;
-
-                      return Text(
-                        count <= 0
-                            ? 'Start scanning products!'
-                            : 'You have scanned $count products',
-                        style: const TextStyle(
-                          fontSize: 18,
-                          color: Colors.black87,
-                        ),
-                      );
-                    },
+                  //Texto indicando los productos escaneados
+                  Text(
+                    _scannedCount <= 0
+                    ? 'Start scanning products!'
+                    : 'You have scanned $_scannedCount products',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: Colors.black87,
+                    ),
                   ),
                 ],
               ),

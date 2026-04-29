@@ -28,7 +28,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
     }
 
     return Scaffold(
+
       appBar: AppBar(
+        // Barra superior
         title: const Text(
           'Scan History',
           style: TextStyle(
@@ -37,22 +39,21 @@ class _HistoryScreenState extends State<HistoryScreen> {
             fontFamily: 'Georgia',
           ),
         ),
-        elevation: 0,
         centerTitle: true,
       ),
+
+      // Lista de productos
       body: FutureBuilder<List<Product>>(
         future: _historyService.getProductsByUser(user.id!),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: Color(0xFF86C28B)));
-          }
 
           if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
+            return Center(child: Text('Error loading the data'));
           }
 
           final products = snapshot.data ?? [];
 
+          //Si aún no se escanearon productos
           if (products.isEmpty) {
             return const Center(
               child: Text(
@@ -62,17 +63,23 @@ class _HistoryScreenState extends State<HistoryScreen> {
             );
           }
 
+          //Widget en forma de lista para cada producto
           return ListView.separated(
+            //Para que no ocupen todo el ancho de la pantalla
             padding: const EdgeInsets.all(16),
+
             itemCount: products.length,
-            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            //Separación entre elementos
+            separatorBuilder: (context, index) => const SizedBox(height: 20),
+
             itemBuilder: (context, index) {
               final product = products[index];
+
+              //Hacer clickable
               return InkWell(
                 onTap: () async {
-
-
                   try {
+                    //Navegar a la pestaña de detalle de producto
                     final fullProduct = await _productService.fetchProduct(product.barcode);
                     if (mounted) {
                       Navigator.push(
@@ -91,6 +98,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   }
                 },
                 child: Container(
+
+                  //Estilo de cada elemento
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(15),
@@ -103,6 +112,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                       ),
                     ],
                   ),
+
                   child: Row(
                     children: [
                       // Imagen del producto
@@ -111,22 +121,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           topLeft: Radius.circular(15),
                           bottomLeft: Radius.circular(15),
                         ),
-                        child: product.imgUrl.isNotEmpty
-                            ? Image.network(
+                        child: Image.network(
                                 product.imgUrl,
                                 width: 100,
                                 height: 100,
                                 fit: BoxFit.cover,
                               )
-                            : Container(
-                                width: 100,
-                                height: 100,
-                                color: Colors.grey[200],
-                                child: const Icon(Icons.image_not_supported),
-                              ),
                       ),
                       const SizedBox(width: 15),
+
+                      //Para que el nombre ocupe todo el espacio sobrante
                       Expanded(
+                        //Margen interno
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 5),
                           child: Column(
@@ -146,6 +152,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           ),
                         ),
                       ),
+
                       // Nota Total
                       Padding(
                         padding: const EdgeInsets.all(15.0),
@@ -174,6 +181,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
+  //Color de la nota
   Color _getScoreColor(double score) {
     if (score >= 7) return const Color(0xFF6DA67A);
     if (score >= 4) return const Color(0xFFFBC02D);

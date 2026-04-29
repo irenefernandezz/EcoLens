@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:helloworld/services/product_service.dart';
-import 'package:helloworld/responses/product_response.dart';
 import 'package:helloworld/screens/detail_result.dart';
+import 'package:toastification/toastification.dart';
+import 'package:logger/logger.dart';
 
-class ThirdScreen extends StatefulWidget {
-  const ThirdScreen({super.key});
+// Configuración de logger
+var logger = Logger(
+  printer: PrettyPrinter(),
+);
+
+
+class ScanScreen extends StatefulWidget {
+  const ScanScreen({super.key});
 
   @override
-  State<ThirdScreen> createState() => _ThirdScreenState();
+  State<ScanScreen> createState() => _ScanScreenState();
 }
 
-class _ThirdScreenState extends State<ThirdScreen> {
+class _ScanScreenState extends State<ScanScreen> {
+
   bool manually = false;
   final TextEditingController _controller = TextEditingController();
   final ProductService productService = ProductService();
@@ -32,21 +40,45 @@ class _ThirdScreenState extends State<ThirdScreen> {
         context,
         MaterialPageRoute(builder: (context) => DetailResult(product: product)),
       );
+
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Product not found. Please, try again')),
-      );
+      _showProductNotFoundToast(code);
     }
+  }
+
+  void _showProductNotFoundToast(String barcode) {
+    logger.d("Showing product not found toast for $barcode");
+    toastification.show(
+      type: ToastificationType.error,
+      style: ToastificationStyle.flatColored,
+      autoCloseDuration: const Duration(seconds: 4),
+      title: Text('Product not found for barcode: $barcode', style: const TextStyle(fontWeight: FontWeight.bold)),
+      alignment: Alignment.bottomCenter,
+      direction: TextDirection.ltr,
+      animationDuration: const Duration(milliseconds: 600),
+      icon: const Icon(Icons.not_interested),
+      showIcon: true,
+      primaryColor: Colors.red ,
+      backgroundColor: Colors.white,
+      foregroundColor: Colors.black,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+      // Margen inferior aumentado para que el toast suba sobre el menú
+      margin: const EdgeInsets.only(bottom: 110, left: 12, right: 12),
+      borderRadius: BorderRadius.circular(12),
+      showProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      dragToClose: true,
+      applyBlurEffect: true,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      // Barra superior
       appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.white,
         centerTitle: true,
         title: const Text(
           'EcoLens Scanner',
@@ -57,9 +89,10 @@ class _ThirdScreenState extends State<ThirdScreen> {
           ),
         ),
       ),
+
       body: Stack(
         children: [
-          // Logo decorativo arriba
+          //Logo y descripción con posición absoluta
           Positioned(
             top: -5,
             left: 0,
@@ -87,9 +120,11 @@ class _ThirdScreenState extends State<ThirdScreen> {
             // La cámara limitada al recuadro central
             Center(
               child: Column(
+                //Centrar elementos
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const SizedBox(height: 20), // Espacio para el logo superior
+                  const SizedBox(height: 20),
+                  //El recuadro de la cámara
                   ClipRRect(
                     child: Container(
                       width: 280,
@@ -100,9 +135,11 @@ class _ThirdScreenState extends State<ThirdScreen> {
                           width: 7,
                         ),
                       ),
+                      //La cámara
                       child: MobileScanner(
                         fit: BoxFit.cover,
                         onDetect: (capture) {
+                          //Detectar códigos de barras
                           final List<Barcode> barcodes = capture.barcodes;
                           if (barcodes.isNotEmpty && barcodes.first.rawValue != null) {
                             _onCodeDetected(barcodes.first.rawValue!);
@@ -126,12 +163,9 @@ class _ThirdScreenState extends State<ThirdScreen> {
           ] else ...[
             //Input text para introducir código de barras manualmente
             Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 40.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-
                     const SizedBox(height: 60),
                     TextField(
                       controller: _controller,
@@ -139,14 +173,20 @@ class _ThirdScreenState extends State<ThirdScreen> {
                       textAlign: .center,
                       decoration: InputDecoration(
                         hintText: 'ej: 0 000000 000000',
+
+                        //Borde exterior verde redondeado
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(25),
-                          borderSide: const BorderSide(color: Color(0xFF86C28B)),
+                          borderSide: const BorderSide(color: Color(0xFF86C28B), width: 2),
                         ),
+
+                        //Para que el borde se mantenga cuando se selecciona
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(25),
                           borderSide: const BorderSide(color: Color(0xFF86C28B), width: 2),
                         ),
+
+                        //Icono de flecha
                         suffixIcon: Padding(
                           padding: const EdgeInsets.only(right: 8.0),
                           child: IconButton(
@@ -173,7 +213,6 @@ class _ThirdScreenState extends State<ThirdScreen> {
                     ),
                   ],
                 ),
-              ),
             ),
           ],
 
