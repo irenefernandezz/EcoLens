@@ -19,7 +19,6 @@ class HistoryService {
   Future<List<Product>> getProductsByUser(int userId) async {
     final db = await DatabaseHelper.instance.database;
     
-    // Hacemos un JOIN para traer los datos del producto directamente
     final List<Map<String, dynamic>> maps = await db.rawQuery('''
       SELECT p.* FROM products p
       INNER JOIN history h ON p.id = h.product_id
