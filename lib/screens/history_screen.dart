@@ -16,10 +16,27 @@ class _HistoryScreenState extends State<HistoryScreen> {
   final HistoryService _historyService = HistoryService();
   final ProductService _productService = ProductService();
   final UserService _userService = UserService();
+  late final currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadName();
+  }
+
+  Future<void> _loadName() async {
+    final username = await _userService.getCurrentUser();
+    if (mounted) {
+      setState(() {
+        currentUser = username;
+      });
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
-    final user = _userService.getCurrentUser();
+    final user = currentUser;
 
     if (user == null || user.id == null) {
       return const Scaffold(

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:helloworld/models/user.dart';
 import 'package:helloworld/database/initDB.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserService {
   // Instancia única (Singleton)
@@ -12,13 +13,31 @@ class UserService {
 
   UserService._internal();
 
-  User? _currentUser;
   final _userController = StreamController<User?>.broadcast();
 
   Stream<User?> get userStream => _userController.stream;
 
-  User? getCurrentUser() {
-    return _currentUser;
+  Future<User?> getCurrentUser() async {
+    final db = await DatabaseHelper.instance.database;
+    final prefs = await SharedPreferences.getInstance();
+    String? username = prefs.getString('username');
+
+    if(username == null) return null;
+
+    final List<Map<String, dynamic>> users = await db.query(
+      'users',
+      where: 'username = ?',
+      whereArgs: [username],
+    );
+
+    if (users.isNotEmpty) {
+
+      User currentUser = User.fromMap(users.first);
+      return currentUser;
+    }
+
+    return null;
+
   }
 
   Future<User?> findUser(String email) async {
@@ -31,11 +50,15 @@ class UserService {
     );
 
     if (users.isNotEmpty) {
-      _currentUser = User.fromMap(users.first);
-      _userController.add(_currentUser);
-      return _currentUser;
+
+      User currentUser = User.fromMap(users.first);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('username',currentUser.username);
+      //_userController.add(_currentUser);
+      return currentUser;
     } else {
-      _userController.add(null);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('username');
       return null;
     }
   }
@@ -52,9 +75,12 @@ class UserService {
         'avatar': user.avatar,
       },
     );
-    
-    _currentUser = user;
-    _userController.add(_currentUser);
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('username', user.username);
+
+    //_currentUser = user;
+    //_userController.add(_currentUser);
   }
 
   Future<void> updateUser(User user) async {
@@ -66,9 +92,13 @@ class UserService {
       where: 'id = ?',
       whereArgs: [user.id],
     );
-    
-    _currentUser = user;
-    _userController.add(_currentUser);
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('username', user.username);
+
+    //_currentUser = user;
+    //_userController.add(_currentUser);
+
   }
 
   Future<void> deleteUser(User user) async {
@@ -79,8 +109,13 @@ class UserService {
       where: 'id = ?',
       whereArgs: [user.id],
     );
-    _currentUser = null;
-    _userController.add(null);
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('username');
+
+    //_currentUser = null;
+    //_userController.add(null);
+
   }
 
   void dispose() {

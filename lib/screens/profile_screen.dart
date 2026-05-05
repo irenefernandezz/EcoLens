@@ -21,6 +21,22 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final userService = UserService();
+  late final currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadName();
+  }
+
+  Future<void> _loadName() async {
+    final username = await userService.getCurrentUser();
+    if (mounted) {
+      setState(() {
+        currentUser = username;
+      });
+    }
+  }
 
   //Función para mostrar los avatares disponibles
   void _changeAvatar(model.User currentUser) {
@@ -67,6 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         setState(() {});
         //Cerrar la pestaña de los avatares
         if (mounted) Navigator.pop(context);
+        //Recargar página
       },
       child: CircleAvatar(
         radius: 35,
@@ -100,7 +117,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           //Aceptar y editar
           ElevatedButton(
             onPressed: () async {
-              final currentUser = userService.getCurrentUser();
               if (currentUser != null) {
                 final updatedUser = model.User(
                   id: currentUser.id,
@@ -124,6 +140,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 if (mounted) {
                   setState(() {});
                   Navigator.of(context, rootNavigator: true).pop();
+                  //Recargar página
                 }
               }
             },
@@ -178,15 +195,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               onPressed: () async {
                 try {
-                  // 1. Cerramos el diálogo usando su propio contexto
                   Navigator.of(dialogContext).pop();
 
-                  // 2. Borramos de la base de datos local
                   await userService.deleteUser(currentUser);
                   
-                  // 3. Borramos de Firebase
-                  // Al tener éxito, el StreamBuilder de main.dart detectará la desconexión
-                  // y nos llevará al LoginScreen automáticamente.
+                  //Borrar de firebase
                   await FirebaseAuth.instance.currentUser?.delete();
 
                   if (mounted) {
@@ -209,9 +222,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentUser = userService.getCurrentUser();
 
-    if (currentUser == null) {
+    if (this.currentUser == null) {
       return const Scaffold(body: Center(child: Text('User not found')));
     }
 

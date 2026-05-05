@@ -3,6 +3,7 @@ import 'package:helloworld/models/product.dart';
 import '../database/initDB.dart';
 
 class HistoryService {
+
   Future<List<Product_user>> getAllByUser(int userId) async {
     final db = await DatabaseHelper.instance.database;
     final List<Map<String, dynamic>> maps = await db.query(
@@ -29,5 +30,35 @@ class HistoryService {
     return List.generate(maps.length, (i) {
       return Product.fromMap(maps[i]);
     });
+  }
+
+  Future<void> addRegister(int userid, int productid) async {
+    final db = await DatabaseHelper.instance.database;
+
+    final List<Map<String, dynamic>> existingHistory = await db.query(
+      'history',
+      where: 'user_id = ? AND product_id = ?',
+      whereArgs: [userid, productid],
+    );
+
+
+    if (existingHistory.isEmpty) {
+      await db.insert(
+        'history',
+        {
+          'user_id': userid,
+          'product_id': productid,
+          'fecha_scan': DateTime.now().toIso8601String(),
+        },
+      );
+    } else {
+
+      await db.update(
+        'history',
+        {'fecha_scan': DateTime.now().toIso8601String()},
+        where: 'user_id = ? AND product_id = ?',
+        whereArgs: [userid, productid],
+      );
+    }
   }
 }

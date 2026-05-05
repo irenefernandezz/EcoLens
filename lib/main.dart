@@ -41,7 +41,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  // Guardamos el email para saber si es un inicio de sesión nuevo y evitar duplicados
+  // Guardar el email para saber si es un inicio de sesión nuevo y evitar duplicados
   String? _lastUserEmail;
 
   @override

@@ -29,6 +29,7 @@ class _SplashScreenState extends State<SplashScreen> {
   final historyService = HistoryService();
   final userService = UserService();
   final productService = ProductService();
+  late final currentUser;
 
   int _scannedCount = 0; // Variable para guardar el número de productos escaneados
 
@@ -36,6 +37,16 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     _loadCount(); //Cargar el número de productos escaneados
+    _loadName();
+  }
+
+  Future<void> _loadName() async {
+    final username = await userService.getCurrentUser();
+    if (mounted) {
+      setState(() {
+        currentUser = username;
+      });
+    }
   }
 
   Future<void> _loadCount() async {
@@ -49,7 +60,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   // Calcula el número de productos escaneados por el usuario
   Future<int> getScannedProducts() async {
-    final id = userService.getCurrentUser()?.id;
+    final id = currentUser?.id;
     if (id != null) {
       final list = await historyService.getProductsByUser(id);
       return list.length;
@@ -60,7 +71,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   // Obtener el barcode del último producto escaneado para enlazarlo con el botón
   Future<String?> getLastScannedProduct() async {
-    final id = userService.getCurrentUser()?.id;
+    final id = currentUser.id;
     if (id != null) {
       final list = await historyService.getProductsByUser(id);
       if (list.isNotEmpty) {
@@ -86,10 +97,11 @@ class _SplashScreenState extends State<SplashScreen> {
               top: 10,
               right: 10,
 
+              //Cambiar para usar el usuario actual directamente
               //Se usa StreamBuilder para reflear cambios en tiempo real sobre la foto de perfil, en lugar de llamar a userService.getCurrentUser()
               child: StreamBuilder<model.User?>(
                 stream: userService.userStream,
-                initialData: userService.getCurrentUser(),
+                initialData: currentUser,
                 builder: (context, snapshot) {
                   final user = snapshot.data;
                   final avatarUrl = user?.avatar ?? 'lib/resources/profile.png';

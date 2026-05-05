@@ -1,11 +1,21 @@
 import 'dart:convert';
+import 'package:helloworld/screens/history_screen.dart';
+import 'package:helloworld/services/history_service.dart';
 import 'package:helloworld/services/user_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:helloworld/responses/product_response.dart';
 import 'package:helloworld/database/initDB.dart';
+import 'package:logger/logger.dart';
+
+// Configuración de logger
+var logger = Logger(
+  printer: PrettyPrinter(),
+);
+
 
 class ProductService {
   ProductResponse? currentProduct;
+  final historyService = HistoryService();
 
   Future<ProductResponse> fetchProduct(String? id) async {
     if (id == null) throw Exception("Id is null");
@@ -19,7 +29,7 @@ class ProductService {
         final productResponse = ProductResponse.fromJson(data);
         currentProduct = productResponse;
         
-        // Guardamos en la base de datos local incluyendo el score
+        // Guardar en la base de datos local incluyendo el score
         await _saveToDatabase(productResponse, id);
 
         return productResponse;
@@ -68,39 +78,15 @@ class ProductService {
       );
     }
 
-    final currentUser = UserService().getCurrentUser();
+
+    final currentUser = await UserService().getCurrentUser();
+
     if (currentUser != null && currentUser.id != null) {
 
-      final List<Map<String, dynamic>> existingHistory = await db.query(
-        'history',
-        where: 'user_id = ? AND product_id = ?',
-        whereArgs: [currentUser.id, productId],
-      );
-
-
-      if (existingHistory.isEmpty) {
-        await db.insert(
-          'history',
-          {
-            'user_id': currentUser.id,
-            'product_id': productId,
-            'fecha_scan': DateTime.now().toIso8601String(),
-          },
-        );
-        print("Nuevo registro de historial añadido para el usuario ${currentUser.id}");
-      } else {
-
-        await db.update(
-          'history',
-          {'fecha_scan': DateTime.now().toIso8601String()},
-          where: 'user_id = ? AND product_id = ?',
-          whereArgs: [currentUser.id, productId],
-        );
-        print("Fecha de escaneo actualizada para el producto $productId");
-      }
+      historyService.addRegister(currentUser.id!, productId);
     }
 
-    print("Producto procesado en BD con ID local: $productId");
+    logger.d("Producto procesado en BD con ID local: $productId");
   }
 
 }
