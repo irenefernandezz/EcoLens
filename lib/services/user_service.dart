@@ -4,7 +4,6 @@ import 'package:helloworld/database/initDB.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserService {
-  // Instancia única (Singleton)
   static final UserService _instance = UserService._internal();
 
   factory UserService() {
@@ -31,13 +30,10 @@ class UserService {
     );
 
     if (users.isNotEmpty) {
-
       User currentUser = User.fromMap(users.first);
       return currentUser;
     }
-
     return null;
-
   }
 
   Future<User?> findUser(String email) async {
@@ -50,15 +46,15 @@ class UserService {
     );
 
     if (users.isNotEmpty) {
-
       User currentUser = User.fromMap(users.first);
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('username',currentUser.username);
-      //_userController.add(_currentUser);
+      await prefs.setString('username', currentUser.username);
+      _userController.add(currentUser); // Notificar
       return currentUser;
     } else {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('username');
+      _userController.add(null); // Notificar
       return null;
     }
   }
@@ -78,9 +74,7 @@ class UserService {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('username', user.username);
-
-    //_currentUser = user;
-    //_userController.add(_currentUser);
+    _userController.add(user); // Notificar
   }
 
   Future<void> updateUser(User user) async {
@@ -95,10 +89,8 @@ class UserService {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('username', user.username);
-
-    //_currentUser = user;
-    //_userController.add(_currentUser);
-
+    
+    _userController.add(user);
   }
 
   Future<void> deleteUser(User user) async {
@@ -112,10 +104,7 @@ class UserService {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('username');
-
-    //_currentUser = null;
-    //_userController.add(null);
-
+    _userController.add(null); // Notificar
   }
 
   void dispose() {

@@ -56,54 +56,88 @@ class ProductResponse {
     );
   }
 
+  int hasnoData(){
+    var resul = 0;
+    if(ecoscore_grade.isEmpty) resul++;
+    if(agribalyse.co2Total == -1) resul++;
+    if(nova_group == -1) resul++;
+    if(ingredients_text.isEmpty && ingredients_text_en.isEmpty) resul++;
+    if(additives_count == -1) resul++;
+    if(palm_oil_count == -1) resul++;
+    return resul;
+
+  }
+
   double calculateTotalScore() {
+
+    //Si hay dos datos o más sin información la nota no es válida
+    if (hasnoData() >= 2) {
+      return -1.0;
+    }
+
     double score = 10.0;
 
-    //EcoScore Grade
-    switch (ecoscore_grade) {
+    // 2. ECOSCORE
+    switch (ecoscore_grade.toLowerCase()) {
       case 'a': score -= 0; break;
       case 'b': score -= 1; break;
       case 'c': score -= 2; break;
       case 'd': score -= 3; break;
       case 'e': score -= 4; break;
+    // Si es un valor raro o vacío, no restamos pero tampoco garantizamos el 10
     }
 
-    //CO2 Emissions
-    if (agribalyse.co2Total > 5) score -= 2;
-    else if (agribalyse.co2Total > 2) score -= 1;
+    // 3. CO2 EMISSIONS
+    if (agribalyse.co2Total != -1) {
+      if (agribalyse.co2Total > 5) score -= 2;
+      else if (agribalyse.co2Total > 2) score -= 1;
+    }
 
-    //Nova Group (Grado de procesamiento)
-    if (nova_group >= 4) score -= 2;
-    else if (nova_group == 3) score -= 1;
+    // 4. NOVA GROUP
+    if (nova_group != -1) {
+      if (nova_group >= 4) score -= 2;
+      else if (nova_group == 3) score -= 1;
+    }
 
-    //Palm oil & Additives
+    // 5. PALM OIL & ADDITIVES
     if (palm_oil_count > 0) score -= 1;
-    if (additives_count > 5) score -= 2;
-    else if (additives_count > 0) score -= 1;
+    if (additives_count != -1) {
+      if (additives_count > 5) score -= 2;
+      else if (additives_count > 0) score -= 1;
+    }
 
-    //Packaging impact
+    // 6. PACKAGING IMPACT
     if (packaging.nonRecyclable > 2) score -= 1;
 
-    //Ingredientes específicos (Basado en tu lógica de DetailResult)
-    final keywordsHigh = ['palm oil', 'beef', 'butter'];
-    final keywordsMedium = ['milk', 'cocoa', 'coffee'];
-    
-    String textToSearch = (ingredients_text_en.isNotEmpty ? ingredients_text_en : ingredients_text).toLowerCase();
-    for (var word in textToSearch.split(' ')) {
-      if (keywordsHigh.any((k) => word.contains(k))) score -= 0.5;
-      else if (keywordsMedium.any((k) => word.contains(k))) score -= 0.3;
+    // 7. INGREDIENTES (Usamos la versión en inglés si existe)
+    final keywordsHigh = ['palm oil', 'beef', 'butter', 'carne', 'mantequilla'];
+    final keywordsMedium = ['milk', 'cocoa', 'coffee', 'leche', 'cacao', 'café'];
+
+    // Limpiamos el texto para una búsqueda más precisa
+    String textToSearch = (ingredients_text_en.isNotEmpty
+        ? ingredients_text_en
+        : ingredients_text)
+        .toLowerCase();
+
+    for (var kw in keywordsHigh) {
+      if (textToSearch.contains(kw)) score -= 0.5;
+    }
+    for (var kw in keywordsMedium) {
+      if (textToSearch.contains(kw)) score -= 0.3;
     }
 
-    //Materiales específicos
-    final redMaterials = ['pvc', 'ps', 'polystyrene'];
+    // 8. MATERIALES (Añadido 'plastic')
+    final redMaterials = ['pvc', 'ps', 'polystyrene', 'plastic', 'plástico'];
     for (var material in packaging.materials) {
-      if (redMaterials.any((m) => material.toLowerCase().contains(m))) {
+      String m = material.toLowerCase();
+      if (redMaterials.any((rm) => m.contains(rm))) {
         score -= 0.5;
       }
     }
 
     return score.clamp(0.0, 10.0);
   }
+
 }
 
 class Agribalyse {
@@ -156,7 +190,7 @@ class Packaging {
 
     return Packaging(
       nonRecyclable: json['non_recyclable_and_non_biodegradable_materials'] ??
-          0,
+          -1,
       materials: materialsList,
       isUnknown: materialsList.contains("unknown"),
     );

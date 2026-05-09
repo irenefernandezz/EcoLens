@@ -3,6 +3,7 @@ import 'package:helloworld/models/product.dart';
 import 'package:helloworld/services/history_service.dart';
 import 'package:helloworld/services/user_service.dart';
 import 'package:helloworld/services/product_service.dart';
+import 'package:helloworld/models/user.dart' as model;
 import 'detail_result.dart';
 
 class HistoryScreen extends StatefulWidget {
@@ -16,7 +17,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   final HistoryService _historyService = HistoryService();
   final ProductService _productService = ProductService();
   final UserService _userService = UserService();
-  late final currentUser;
+  model.User? currentUser;
 
   @override
   void initState() {
@@ -25,10 +26,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Future<void> _loadName() async {
-    final username = await _userService.getCurrentUser();
+    final user = await _userService.getCurrentUser();
     if (mounted) {
       setState(() {
-        currentUser = username;
+        currentUser = user;
       });
     }
   }
@@ -36,16 +37,15 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final user = currentUser;
-
-    if (user == null || user.id == null) {
+    if (currentUser == null) {
       return const Scaffold(
-        body: Center(child: Text('Please log in to see your history.')),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
-    return Scaffold(
+    final user = currentUser!;
 
+    return Scaffold(
       appBar: AppBar(
         // Barra superior
         title: const Text(
@@ -65,7 +65,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         builder: (context, snapshot) {
 
           if (snapshot.hasError) {
-            return Center(child: Text('Error loading the data'));
+            return const Center(child: Text('Error loading the data'));
           }
 
           final products = snapshot.data ?? [];
@@ -138,12 +138,26 @@ class _HistoryScreenState extends State<HistoryScreen> {
                           topLeft: Radius.circular(15),
                           bottomLeft: Radius.circular(15),
                         ),
-                        child: Image.network(
-                                product.imgUrl,
-                                width: 100,
-                                height: 100,
-                                fit: BoxFit.cover,
-                              )
+                          child: product.imgUrl.isNotEmpty && product.imgUrl.startsWith('http')
+                              ? Image.network(
+                            product.imgUrl,
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) => Image.asset(
+                              'lib/resources/no-image-icon.png',
+                              width: 100,
+                              height: 100,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                          //Si no hay imagen cargar una por defecto
+                              : Image.asset(
+                            'lib/resources/no-image-icon.png',
+                            width: 100,
+                            height: 100,
+                            fit: BoxFit.cover,
+                          )
                       ),
                       const SizedBox(width: 15),
 
@@ -176,14 +190,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                         child: Column(
                           children: [
                             Text(
-                              product.score.toStringAsFixed(1),
+                              product.score == -1 ? 'N/A' : product.score.toStringAsFixed(1),
                               style: TextStyle(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
-                                color: _getScoreColor(product.score),
+                                color: product.score == -1 ? Colors.grey : _getScoreColor(product.score),
                               ),
                             ),
-                            const Text('/10', style: TextStyle(fontSize: 14)),
+                            Text(product.score == -1 ? '' : '/10', style: TextStyle(fontSize: 14)),
                           ],
                         ),
                       ),

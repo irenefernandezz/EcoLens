@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:helloworld/screens/history_screen.dart';
 import 'package:helloworld/screens/profile_screen.dart';
+import 'package:helloworld/screens/rewards_screen.dart';
 import 'firebase_options.dart';
 import 'database/initDB.dart';
 import 'services/user_service.dart';
@@ -149,7 +150,7 @@ class _MainScreenState extends State<MainScreen> {
     const SplashScreen(),
     const ProfileScreen(),
     const ScanScreen(),
-    const Center(child: Text('Achievements Screen')),
+    const RewardsScreen(),
     const HistoryScreen(),
   ];
 

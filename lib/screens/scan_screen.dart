@@ -4,6 +4,7 @@ import 'package:helloworld/services/product_service.dart';
 import 'package:helloworld/screens/detail_result.dart';
 import 'package:toastification/toastification.dart';
 import 'package:logger/logger.dart';
+import 'package:vibration/vibration.dart';
 
 // Configuración de logger
 var logger = Logger(
@@ -21,6 +22,8 @@ class ScanScreen extends StatefulWidget {
 class _ScanScreenState extends State<ScanScreen> {
 
   bool manually = false;
+  //Para que no se escanee un mismo producto en varios frames
+  bool _isProcessing = false;
   final TextEditingController _controller = TextEditingController();
   final ProductService productService = ProductService();
 
@@ -41,11 +44,26 @@ class _ScanScreenState extends State<ScanScreen> {
         MaterialPageRoute(builder: (context) => DetailResult(product: product)),
       );
 
+      // CUANDO EL USUARIO VUELVE ATRÁS:
+      // Reiniciar el bloqueo para que pueda escanear otro producto
+      setState(() {
+        _isProcessing = false;
+      });
+
     } catch (e) {
       if (!mounted) return;
       _showProductNotFoundToast(code);
+
+      // Si hubo un error, permitir escanear de nuevo
+      Future.delayed(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() {
+            _isProcessing = false;
+          });
+        }
+      });
     }
-  }
+    }
 
   void _showProductNotFoundToast(String barcode) {
     logger.d("Showing product not found toast for $barcode");
@@ -139,7 +157,10 @@ class _ScanScreenState extends State<ScanScreen> {
                       child: MobileScanner(
                         fit: BoxFit.cover,
                         onDetect: (capture) {
+                          if(_isProcessing) return;
                           //Detectar códigos de barras
+                          //vibración
+                          Vibration.vibrate(duration: 500);
                           final List<Barcode> barcodes = capture.barcodes;
                           if (barcodes.isNotEmpty && barcodes.first.rawValue != null) {
                             _onCodeDetected(barcodes.first.rawValue!);

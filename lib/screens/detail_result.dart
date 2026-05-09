@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:helloworld/responses/product_response.dart';
+import 'package:translator/translator.dart';
 
 class DetailResult extends StatefulWidget {
   final ProductResponse product; // producto recibido
@@ -11,11 +12,55 @@ class DetailResult extends StatefulWidget {
 }
 
 class _DetailResult extends State<DetailResult> {
+
+  //TRADUCIR INGREDIENTES Y MATERIALES EN CASO DE QUE NO VENNGAN EN INGLÉS
+  final translator = GoogleTranslator();
+
   // ingredientes contaminantes
   final keywordsHigh = ['palm oil', 'beef', 'butter'];
   final keywordsMedium = ['milk', 'cocoa', 'coffee'];
+
   // materiales contaminantes
-  final redMaterials = ['pvc', 'ps', 'polystyrene'];
+  final redMaterials = ['pvc', 'ps', 'polystyrene', 'plastic'];
+
+  String translatedIngredients = "";
+  List<String> translatedMaterials = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTranslations();
+  }
+
+  Future<void> _loadTranslations() async {
+    //Ingredientes del producto
+    String rawIngredients = widget.product.ingredients_text_en.isEmpty
+        ? widget.product.ingredients_text
+        : widget.product.ingredients_text_en;
+
+    String ingredientsEn = await translateText(rawIngredients);
+
+    // Traducir materiales uno a uno
+    List<String> materialsEn = [];
+    for (var m in widget.product.packaging.materials) {
+      materialsEn.add(await translateText(m));
+    }
+
+    if (mounted) {
+      setState(() {
+        translatedIngredients = ingredientsEn;
+        translatedMaterials = materialsEn;
+      });
+    }
+  }
+
+    Future<String> translateText(String text) async {
+    if (text.isEmpty || text == "unknown") return text;
+
+    var translation = await translator.translate(text, to: 'en');
+    return translation.text;
+  }
+
 
   // Función que relaciona cada nivel del ecoScore con un color
   List<Color> color_eco(String value) {
@@ -89,15 +134,27 @@ class _DetailResult extends State<DetailResult> {
 
   // Función que relaciona la cantidad de co2 producido con un color
   List<Color> color_co2(String value) {
-    switch (value.toLowerCase()) {
-      case '0' || '1' || '2':
-        return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
-      case '3' || '4' || '5':
-        return [const Color(0xFFFFEE58), const Color(0xFFFBC02D)];
-      case "unknown":
-        return [const Color(0xFFC3C3C3), const Color(0xFF7F7F7F)];
-      default:
-        return [const Color(0xFFE57373), const Color(0xFFD32F2F)];
+    //Manejar el caso de desconocido
+    if (value.toLowerCase() == "unknown") {
+      return [const Color(0xFFC3C3C3), const Color(0xFF7F7F7F)];
+    }
+
+    //Convertir a número
+    final double? co2Value = double.tryParse(value);
+
+    if (co2Value == null) {
+      return [const Color(0xFFE57373), const Color(0xFFD32F2F)];
+    }
+
+    if (co2Value < 3.0) {
+      // De 0 a 2.99... (Verde)
+      return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
+    } else if (co2Value < 6.0) {
+      // De 3.0 a 5.99... (Amarillo)
+      return [const Color(0xFFFFEE58), const Color(0xFFFBC02D)];
+    } else {
+      // 6.0 o más (Rojo)
+      return [const Color(0xFFE57373), const Color(0xFFD32F2F)];
     }
   }
 
@@ -170,7 +227,10 @@ class _DetailResult extends State<DetailResult> {
   }
 
   // Función que identifica cada impato medioambiental con un color
-  Color getScoreColor(double score) {
+  Color getScoreColor(double score, bool isScoreValid) {
+    if (!isScoreValid) {
+      return const Color(0xFFC3C3C3); // Gris
+    }
     if (score >= 7) return const Color(0xFF6DA67A); // Verde
     if (score >= 4) return const Color(0xFFFBC02D); // Amarillo
     return const Color(0xFFE57373); // Rojo
@@ -228,6 +288,7 @@ class _DetailResult extends State<DetailResult> {
     final nonRecyclableColors = color_non_recyclable(nonRecyclableScore);
 
     final double score = widget.product.calculateTotalScore();
+    final bool isScoreValid = score != -1; //-1 significa "sin datos"
 
     return Scaffold(
       //Barra superior
@@ -290,16 +351,16 @@ class _DetailResult extends State<DetailResult> {
                       Column(
                         children: [
                           Text(
-                            score.toStringAsFixed(1),
+                            isScoreValid ? score.toStringAsFixed(1) : "N/A",
                             style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
-                              color: getScoreColor(score),
+                              color: getScoreColor(score, isScoreValid),
                             ),
                           ),
-                          const Text(
-                            '/10',
-                            style: TextStyle(fontSize: 12),
+                          Text(
+                            isScoreValid ? '/10' : '',
+                            style: const TextStyle(fontSize: 12),
                           ),
                         ],
                       ),
@@ -330,7 +391,9 @@ class _DetailResult extends State<DetailResult> {
                   const Text('Materials list:', style: TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 5),
                   RichText(
-                    text: buildHighlightedMaterials(widget.product.packaging.materials),
+                    text: buildHighlightedMaterials(
+                      translatedMaterials.isEmpty ? widget.product.packaging.materials : translatedMaterials,
+                    ),
                   ),
                   const Divider(height: 40, thickness: 2.5, color: Color(0xff859987)),
 
@@ -340,14 +403,11 @@ class _DetailResult extends State<DetailResult> {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 10),
-                  if(widget.product.ingredients_text_en == "")
-                    RichText(
-                      text: buildHighlightedIngredients(widget.product.ingredients_text),
-                    )
-                  else
-                    RichText(
-                      text: buildHighlightedIngredients(widget.product.ingredients_text_en),
-                    )
+                  RichText(
+                    text: buildHighlightedIngredients(
+                        translatedIngredients.isEmpty ? widget.product.ingredients_text : translatedIngredients
+                    ),
+                  ),
                 ],
               ),
             ),

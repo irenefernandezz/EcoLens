@@ -9,69 +9,58 @@ import '../shared/logout_dialog.dart';
 import 'detail_result.dart';
 import 'package:logger/logger.dart';
 
-// Configuración de logger
 var logger = Logger(
   printer: PrettyPrinter(),
 );
 
-//StatefulWidget para evitar operaciones asíncronas con Future en el build
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
-
   @override
   State<SplashScreen> createState() => _SplashScreenState();
-
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  // Inicializar servicios
   final historyService = HistoryService();
   final userService = UserService();
   final productService = ProductService();
-  late final currentUser;
+  model.User? currentUser;
 
-  int _scannedCount = 0; // Variable para guardar el número de productos escaneados
+  int _scannedCount = 0;
 
   @override
   void initState() {
     super.initState();
-    _loadCount(); //Cargar el número de productos escaneados
-    _loadName();
+    _initData();
   }
 
-  Future<void> _loadName() async {
-    final username = await userService.getCurrentUser();
+  // Recarga los datos del usuario y el contador
+  Future<void> _initData() async {
+    final user = await userService.getCurrentUser();
     if (mounted) {
       setState(() {
-        currentUser = username;
+        currentUser = user;
       });
+      if (user != null) {
+        _loadCount();
+      }
     }
   }
 
   Future<void> _loadCount() async {
-    final count = await getScannedProducts();
-    if (mounted) {
-      setState(() {
-        _scannedCount = count;
-      });
-    }
-  }
-
-  // Calcula el número de productos escaneados por el usuario
-  Future<int> getScannedProducts() async {
     final id = currentUser?.id;
     if (id != null) {
       final list = await historyService.getProductsByUser(id);
-      return list.length;
-    } else {
-      return -1;
+      if (mounted) {
+        setState(() {
+          _scannedCount = list.length;
+        });
+      }
     }
   }
 
-  // Obtener el barcode del último producto escaneado para enlazarlo con el botón
   Future<String?> getLastScannedProduct() async {
-    final id = currentUser.id;
+    final id = currentUser?.id;
     if (id != null) {
       final list = await historyService.getProductsByUser(id);
       if (list.isNotEmpty) {
@@ -83,101 +72,85 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Obtenemos la URL actual o la por defecto
+    final avatarUrl = currentUser?.avatar ?? 'lib/resources/profile.png';
+
     return Scaffold(
       body: Center(
-
-        //Stack en lugar de Column para tener una mayor flexibilidad a la hora de posicionar los elementos.
-        //Column = elementos uno debajo de otro
         child: Stack(
           children: [
-
-            // Botón arriba a la derecha del perfil del usuario
             Positioned(
-              //Coordenadas exactas
               top: 10,
               right: 10,
-
-              //Cambiar para usar el usuario actual directamente
-              //Se usa StreamBuilder para reflear cambios en tiempo real sobre la foto de perfil, en lugar de llamar a userService.getCurrentUser()
-              child: StreamBuilder<model.User?>(
-                stream: userService.userStream,
-                initialData: currentUser,
-                builder: (context, snapshot) {
-                  final user = snapshot.data;
-                  final avatarUrl = user?.avatar ?? 'lib/resources/profile.png';
-
-                  //Popup del botón de perfil
-                  return PopupMenuButton<String>(
-                    //Coordenadas
-                    offset: const Offset(-40, 70),
-                    //Forma del Popup
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
+              child: PopupMenuButton<String>(
+                // La Key asegura que el botón se refresque si el usuario cambia
+                key: ValueKey(currentUser?.id ?? 'guest'),
+                offset: const Offset(-40, 70),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                onSelected: (value) async {
+                  if (value == 'logout') {
+                    showLogoutDialog(context);
+                  } else if (value == 'profile') {
+                    // Al usar await, esperamos a que el usuario cierre el perfil
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                    );
+                    // IMPORTANTE: recargar initData al volver
+                    _initData();
+                  }
+                },
+                itemBuilder: (BuildContext context) => [
+                  const PopupMenuItem<String>(
+                    value: 'profile',
+                    child: Row(
+                      children: [
+                        Icon(Icons.person_outline, color: Colors.black87),
+                        SizedBox(width: 10),
+                        Text('My Profile'),
+                      ],
                     ),
-                    onSelected: (value) async {
-                      if (value == 'logout') {
-                        showLogoutDialog(context);
-                      } else if (value == 'profile') {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const ProfileScreen()),
-                        );
-                      }
-                      logger.d('Opción seleccionada: $value');
-                    },
-                    //Aspecto de las opciones del popup
-                    itemBuilder: (BuildContext context) => [
-                      const PopupMenuItem<String>(
-                        value: 'profile',
-                        child: Row(
-                          children: [
-                            Icon(Icons.person_outline, color: Colors.black87),
-                            SizedBox(width: 10),
-                            Text('My Profile'),
-                          ],
-                        ),
-                      ),
-                      const PopupMenuItem<String>(
-                        value: 'logout',
-                        child: Row(
-                          children: [
-                            Icon(Icons.logout_outlined, color: Colors.black87),
-                            SizedBox(width: 10),
-                            Text('Logout'),
-                          ],
-                        ),
+                  ),
+                  const PopupMenuItem<String>(
+                    value: 'logout',
+                    child: Row(
+                      children: [
+                        Icon(Icons.logout_outlined, color: Colors.black87),
+                        SizedBox(width: 10),
+                        Text('Logout'),
+                      ],
+                    ),
+                  ),
+                ],
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.3),
+                        spreadRadius: 0,
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
                       ),
                     ],
-                    //Imagen del usuairo con sombra
-                    child: Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.3),
-                            spreadRadius: 0,
-                            blurRadius: 10,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: Image.asset(
-                        avatarUrl,
-                        height: 100,
-                        width: 100,
-                      ),
-                    ),
-                  );
-                },
+                  ),
+                  child: Image.asset(
+                    avatarUrl,
+                    // La Key fuerza a Flutter a recargar el asset si la ruta cambia
+                    key: ValueKey(avatarUrl),
+                    height: 100,
+                    width: 100,
+                  ),
+                ),
               ),
             ),
 
-            // Contenido central: nombre app + logo + mensaje productos escaneados + botón último escaneo
             Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Título
                   const Text(
                     'EcoLens',
                     style: TextStyle(
@@ -188,7 +161,6 @@ class _SplashScreenState extends State<SplashScreen> {
                     ),
                   ),
 
-                  // Logo
                   const SizedBox(height: 20),
                   Image.asset(
                     'lib/resources/logo.png',
@@ -196,9 +168,8 @@ class _SplashScreenState extends State<SplashScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // Botón último escaneo
                   OutlinedButton(
-                    onPressed: () async {
+                    onPressed: currentUser == null ? null : () async {
                       final barcode = await getLastScannedProduct();
                       if (barcode != null) {
                         final lastProduct = await productService.fetchProduct(barcode);
@@ -223,14 +194,11 @@ class _SplashScreenState extends State<SplashScreen> {
                       style: TextStyle(color: Colors.black),
                     ),
                   ),
-
                   const SizedBox(height: 30),
-
-                  //Texto indicando los productos escaneados
                   Text(
                     _scannedCount <= 0
-                    ? 'Start scanning products!'
-                    : 'You have scanned $_scannedCount products',
+                        ? 'Start scanning products!'
+                        : 'You have scanned $_scannedCount products',
                     style: const TextStyle(
                       fontSize: 18,
                       color: Colors.black87,

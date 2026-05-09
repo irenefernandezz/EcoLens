@@ -122,151 +122,154 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              //Logo y nombre
-              Image.asset('lib/resources/logo.png', height: 120),
-              const SizedBox(height: 20),
-              const Text(
-                'EcoLens',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF6DA67A),
-                  fontFamily: 'Georgia',
-                ),
-              ),
-              const SizedBox(height: 40),
-
-              // Botones de selección de método, sólo visibles en login
-              if (_isLogin)
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                      OutlinedButton.icon(
-                        onPressed: () => setState(() {
-                          emailMethod = true;
-                          gmailMethod = false;
-                        }),
-                        icon: const Icon(Icons.email_outlined),
-                        label: const Text('Email'),
-                        style: OutlinedButton.styleFrom(
-                          //Tamaño del botón
-                          minimumSize: const Size(140, 50),
-                          //Borde del botón
-                          side: BorderSide(
-                            color: emailMethod ? const Color(0xFF6DA67A) : Colors.grey,
-                            width: 2,
-                          ),
-                          foregroundColor: emailMethod ? const Color(0xFF6DA67A) : Colors.grey,
-                        ),
-                      ),
-                    const SizedBox(width: 16),
-
-                    OutlinedButton.icon(
-                        onPressed: () {
-                          setState(() {
-                            emailMethod = false;
-                            gmailMethod = true;
-                          });
-                          if (_isLogin) _submit();
-                        },
-                        icon: const Icon(Icons.g_mobiledata, size: 30),
-                        label: const Text('Google'),
-                        style: OutlinedButton.styleFrom(
-                          minimumSize: const Size(140, 50),
-                          side: BorderSide(
-                            color: gmailMethod ? const Color(0xFF6DA67A) : Colors.grey,
-                            width: 2,
-                          ),
-                          foregroundColor: gmailMethod ? const Color(0xFF6DA67A) : Colors.grey,
-                        ),
-                      ),
-                  ],
-                )
-              else
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                //Logo y nombre
+                Image.asset('lib/resources/logo.png', height: 120),
+                const SizedBox(height: 20),
                 const Text(
-                  'Register with your Email',
+                  'EcoLens',
                   style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF6DA67A),
+                    fontFamily: 'Georgia',
                   ),
                 ),
-
-              const SizedBox(height: 32),
-
-              if (emailMethod) ...[
-                //En modo registro se pide el username
-                if (!_isLogin) ...[
-                  //controlar el tamaño
+                const SizedBox(height: 40),
+          
+                // Botones de selección de método, sólo visibles en login
+                if (_isLogin)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                        OutlinedButton.icon(
+                          onPressed: () => setState(() {
+                            emailMethod = true;
+                            gmailMethod = false;
+                          }),
+                          icon: const Icon(Icons.email_outlined),
+                          label: const Text('Email'),
+                          style: OutlinedButton.styleFrom(
+                            //Tamaño del botón
+                            minimumSize: const Size(140, 50),
+                            //Borde del botón
+                            side: BorderSide(
+                              color: emailMethod ? const Color(0xFF6DA67A) : Colors.grey,
+                              width: 2,
+                            ),
+                            foregroundColor: emailMethod ? const Color(0xFF6DA67A) : Colors.grey,
+                          ),
+                        ),
+                      const SizedBox(width: 16),
+          
+                      OutlinedButton.icon(
+                          onPressed: () {
+                            setState(() {
+                              emailMethod = false;
+                              gmailMethod = true;
+                            });
+                            if (_isLogin) _submit();
+                          },
+                          icon: const Icon(Icons.g_mobiledata, size: 30),
+                          label: const Text('Google'),
+                          style: OutlinedButton.styleFrom(
+                            minimumSize: const Size(140, 50),
+                            side: BorderSide(
+                              color: gmailMethod ? const Color(0xFF6DA67A) : Colors.grey,
+                              width: 2,
+                            ),
+                            foregroundColor: gmailMethod ? const Color(0xFF6DA67A) : Colors.grey,
+                          ),
+                        ),
+                    ],
+                  )
+                else
+                  const Text(
+                    'Register with your Email',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey,
+                    ),
+                  ),
+          
+                const SizedBox(height: 32),
+          
+                if (emailMethod) ...[
+                  //En modo registro se pide el username
+                  if (!_isLogin) ...[
+                    //controlar el tamaño
+                    SizedBox(
+                      width: 300,
+                      child: TextField(
+                        controller: _usernameController,
+                        decoration: InputDecoration(
+                          labelText: 'Username',
+                          prefixIcon: const Icon(Icons.person_outline),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      )
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  //Campos de email y contraseña
                   SizedBox(
                     width: 300,
                     child: TextField(
-                      controller: _usernameController,
+                      controller: _emailController,
                       decoration: InputDecoration(
-                        labelText: 'Username',
-                        prefixIcon: const Icon(Icons.person_outline),
+                        labelText: 'Email',
+                        prefixIcon: const Icon(Icons.mail_outline),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                       ),
                     )
                   ),
                   const SizedBox(height: 16),
-                ],
-                //Campos de email y contraseña
-                SizedBox(
-                  width: 300,
-                  child: TextField(
-                    controller: _emailController,
-                    decoration: InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: const Icon(Icons.mail_outline),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  )
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: 300,
-                  child: TextField(
-                    controller: _passwordController,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      labelText: 'Password',
-                      prefixIcon: const Icon(Icons.lock_outline),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  )
-                ),
-                //Botón de inicio de sesión o registro
-                const SizedBox(height: 45),
-                ElevatedButton(
-                  onPressed: _submit,
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(300, 40),
-                    backgroundColor: const Color(0xFF86C28B),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  SizedBox(
+                    width: 300,
+                    child: TextField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        labelText: 'Password',
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    )
                   ),
-                  child: Text(_isLogin ? 'Login' : 'Sign Up'),
+                  //Botón de inicio de sesión o registro
+                  const SizedBox(height: 45),
+                  ElevatedButton(
+                    onPressed: _submit,
+                    style: ElevatedButton.styleFrom(
+                      minimumSize: const Size(300, 40),
+                      backgroundColor: const Color(0xFF86C28B),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: Text(_isLogin ? 'Login' : 'Sign Up'),
+                  ),
+                ],
+          
+                //Cambiar entre inciiar sesión/ registro
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => setState(() {
+                    _isLogin = !_isLogin;
+                    //Si se cambia a registro, se fuerza el método email
+                    if (!_isLogin) {
+                      emailMethod = true;
+                      gmailMethod = false;
+                    }
+                  }),
+                  child: Text(_isLogin ? 'Create an account' : 'Already have an account? Login'),
                 ),
               ],
-
-              //Cambiar entre inciiar sesión/ registro
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () => setState(() {
-                  _isLogin = !_isLogin;
-                  //Si cambiamos a registro, se fuerza el método email
-                  if (!_isLogin) {
-                    emailMethod = true;
-                    gmailMethod = false;
-                  }
-                }),
-                child: Text(_isLogin ? 'Create an account' : 'Already have an account? Login'),
-              ),
-            ],
+          ),
         ),
       ),
     );

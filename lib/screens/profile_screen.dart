@@ -21,7 +21,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final userService = UserService();
-  late final currentUser;
+  model.User? currentUser; // Eliminado 'late'
 
   @override
   void initState() {
@@ -30,16 +30,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadName() async {
-    final username = await userService.getCurrentUser();
+    final user = await userService.getCurrentUser();
     if (mounted) {
       setState(() {
-        currentUser = username;
+        currentUser = user;
       });
     }
   }
 
-  //Función para mostrar los avatares disponibles
-  void _changeAvatar(model.User currentUser) {
+  void _changeAvatar(model.User user) {
     showModalBottomSheet(
       context: context,
       builder: (context) {
@@ -48,15 +47,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           height: 250,
           child: Column(
             children: [
-              const Text('Select Avatar', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              const Text('Select Avatar',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               const SizedBox(height: 20),
               Row(
                 //Mismo espacio entre los avatares
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _avatarOption(currentUser, 'lib/resources/profile.png'),
-                  _avatarOption(currentUser, 'lib/resources/icono_gato.png'),
-                  _avatarOption(currentUser, 'lib/resources/icono_mundo.png'),
+                  _avatarOption(user, 'lib/resources/profile.png'),
+                  _avatarOption(user, 'lib/resources/icono_gato.png'),
+                  _avatarOption(user, 'lib/resources/icono_mundo.png'),
                 ],
               )
             ],
@@ -66,24 +66,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-
-  Widget _avatarOption(model.User currentUser, String path) {
+  Widget _avatarOption(model.User user, String path) {
     return GestureDetector(
 
       //Actualizar el usuario actual con el nuevo avatar
       onTap: () async {
         final updatedUser = model.User(
-          id: currentUser.id,
-          username: currentUser.username,
-          email: currentUser.email,
-          password: currentUser.password,
+          id: user.id,
+          username: user.username,
+          email: user.email,
+          password: user.password,
           avatar: path,
         );
         await userService.updateUser(updatedUser);
-        setState(() {});
-        //Cerrar la pestaña de los avatares
+        _loadName(); // Recargar datos
         if (mounted) Navigator.pop(context);
-        //Recargar página
       },
       child: CircleAvatar(
         radius: 35,
@@ -96,51 +93,69 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  //Editar el nombre del usuario o el email
-  void _editField(String label, String currentValue) {
-    final controller = TextEditingController(text: currentValue);
+  //Editar el nombre del usuario
+  void _editUsername(String currentUsername) {
+    final controller = TextEditingController(text: currentUsername);
 
     showDialog(
       context: context,
-
-      //Alertdialog para cambiar los datos del usuario
-      builder: (context) => AlertDialog(
-        title: Text('Edit $label'),
+      builder: (BuildContext dialogContext) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Column(
+          children: [
+            const Icon(
+              Icons.edit,
+              color: Color(0xFF6DA67A),
+              size: 40,
+            ),
+            const SizedBox(height: 15),
+            const Text(
+              'Edit Username',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
         content: TextField(
           controller: controller,
-          decoration: InputDecoration(hintText: 'Enter new $label'),
+          decoration: InputDecoration(
+            hintText: 'Enter new username',
+            border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide:
+                    const BorderSide(color: Color(0xFF6DA67A), width: 2)),
+          ),
         ),
+        actionsAlignment: MainAxisAlignment.spaceEvenly,
         actions: [
-          //Cancelar
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-
-          //Aceptar y editar
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+            ),
+          ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF86C28B),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
             onPressed: () async {
               if (currentUser != null) {
                 final updatedUser = model.User(
-                  id: currentUser.id,
-                  username: label == 'Username' ? controller.text : currentUser.username,
-                  email: label == 'Email' ? controller.text : currentUser.email,
-                  password: currentUser.password,
-                  avatar: currentUser.avatar,
+                  id: currentUser!.id,
+                  username: controller.text,
+                  email: currentUser!.email,
+                  password: currentUser!.password,
+                  avatar: currentUser!.avatar,
                 );
-                
+
                 await userService.updateUser(updatedUser);
-                
-                // Actualizar Email en Firebase si se cambió
-                if (label == 'Email') {
-                  try {
-                    await FirebaseAuth.instance.currentUser?.updateEmail(controller.text);
-                  } catch (e) {
-                    debugPrint('Error updating email in Firebase: $e');
-                  }
-                }
 
                 if (mounted) {
-                  setState(() {});
-                  Navigator.of(context, rootNavigator: true).pop();
-                  //Recargar página
+                  _loadName();
+                  Navigator.of(dialogContext).pop();
                 }
               }
             },
@@ -151,7 +166,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  void _showAlertDialogDeleteAccount(BuildContext context, model.User currentUser) {
+  void _showAlertDialogDeleteAccount(BuildContext context, model.User user) {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -177,7 +192,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 16),
           ),
-          actionsAlignment: MainAxisAlignment.spaceEvenly, // Botones alineados y separados
+          actionsAlignment: MainAxisAlignment.spaceEvenly,
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
@@ -186,26 +201,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
               ),
             ),
-            // Botón de OK resaltado
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.redAccent,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
               ),
               onPressed: () async {
                 try {
                   Navigator.of(dialogContext).pop();
 
-                  await userService.deleteUser(currentUser);
-                  
+                  await userService.deleteUser(currentUser!);
+
                   //Borrar de firebase
                   await FirebaseAuth.instance.currentUser?.delete();
 
                   if (mounted) {
-                    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (context) => const LoginScreen()),
-                          (route) => false,
+                    Navigator.of(context, rootNavigator: true)
+                        .pushAndRemoveUntil(
+                      MaterialPageRoute(
+                          builder: (context) => const LoginScreen()),
+                      (route) => false,
                     );
                   }
                 } catch (e) {
@@ -222,9 +239,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-
-    if (this.currentUser == null) {
-      return const Scaffold(body: Center(child: Text('User not found')));
+    if (currentUser == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
     return Scaffold(
@@ -234,86 +250,121 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.black),
-            onPressed: () async {
-              showLogoutDialog(context);
-            },
+            onPressed: () => showLogoutDialog(context),
           ),
         ],
       ),
-      body: Center(
-        child: Column(
-          children: [
-            const SizedBox(height: 50),
-            Text(
-              'Welcome, ${currentUser.username}!',
-              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold, fontFamily: 'Georgia'),
+      body: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        children: [
+          const SizedBox(height: 30),
+          Center(
+            child: Text(
+              'Welcome, ${currentUser!.username}!',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Georgia',
+                  color: Color(0xFF6DA67A)),
             ),
-            const SizedBox(height: 30),
-            Stack(
+          ),
+          const SizedBox(height: 30),
+          Center(
+            child: Stack(
               children: [
                 CircleAvatar(
                   radius: 70,
                   backgroundColor: const Color(0xFF86C28B).withOpacity(0.2),
-                  backgroundImage: AssetImage(currentUser.avatar),
+                  backgroundImage: AssetImage(currentUser!.avatar),
                 ),
-                //Mostrar icono de camara abajo a la derecha
                 Positioned(
                   bottom: 0,
                   right: 0,
                   child: GestureDetector(
-                    onTap: () => _changeAvatar(currentUser),
+                    onTap: () => _changeAvatar(currentUser!),
                     child: Container(
                       padding: const EdgeInsets.all(8),
-                      decoration: const BoxDecoration(color: Color(0xFF6DA67A), shape: BoxShape.circle),
-                      child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                      decoration: const BoxDecoration(
+                          color: Color(0xFF6DA67A), shape: BoxShape.circle),
+                      child: const Icon(Icons.camera_alt,
+                          color: Colors.white, size: 20),
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 40),
-            _buildUserField('Username', currentUser.username),
-            const SizedBox(height: 15),
-            _buildUserField('Email', currentUser.email),
-            const SizedBox(height: 60),
-            TextButton.icon(
-              onPressed: () async {
-                _showAlertDialogDeleteAccount(context, currentUser);
-              },
-              icon: const Icon(Icons.delete_forever, color: Colors.red),
-              label: const Text('Delete Account', style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+          ),
+          const SizedBox(height: 40),
+          Center(
+            child: _buildUserField(
+              'Username',
+              currentUser!.username,
+              onTap: () => _editUsername(currentUser!.username),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 15),
+          Center(
+            child: _buildUserField(
+              'Email',
+              currentUser!.email,
+              isEditable: false,
+            ),
+          ),
+          const SizedBox(height: 40),
+          Center(
+            child: TextButton.icon(
+              onPressed: () =>
+                  _showAlertDialogDeleteAccount(context, currentUser!),
+              icon: const Icon(Icons.delete_forever, color: Colors.red),
+              label: const Text('Delete Account',
+                  style: TextStyle(
+                      color: Colors.red, fontWeight: FontWeight.bold)),
+            ),
+          ),
+          const SizedBox(height: 30),
+        ],
       ),
     );
   }
 
-  Widget _buildUserField(String label, String value) {
-    return GestureDetector(
-      onTap: () => _editField(label, value),
-      child: Container(
-        width: 350,
-        padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
-        decoration: BoxDecoration(
+  Widget _buildUserField(String label, String value, {bool isEditable = true, VoidCallback? onTap}) {
+    final fieldContent = Container(
+      constraints: const BoxConstraints(maxWidth: 350),
+      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+      decoration: BoxDecoration(
           color: Colors.grey[100],
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          //Espacio entre el texto y el icono
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Column(
+          borderRadius: BorderRadius.circular(12)),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                Text(value, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                Text(label,
+                    style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                Text(value,
+                    style: TextStyle(
+                        fontSize: 16, 
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black),
+                    overflow: TextOverflow.ellipsis),
               ],
             ),
+          ),
+          if (isEditable)
             const Icon(Icons.edit, size: 20, color: Color(0xFF6DA67A)),
-          ],
-        ),
+        ],
       ),
     );
+
+    if (isEditable && onTap != null) {
+      return GestureDetector(
+        onTap: onTap,
+        child: fieldContent,
+      );
+    }
+    return fieldContent;
   }
 }

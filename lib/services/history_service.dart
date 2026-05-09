@@ -17,6 +17,19 @@ class HistoryService {
     }).toList();
   }
 
+  // Obtener todos los productos escaneados en la app (todos los usuarios)
+  Future<List<Product>> getAllScannedProducts() async {
+    final db = await DatabaseHelper.instance.database;
+    // Corregido: Realizamos un JOIN con la tabla products para obtener los datos completos del producto
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+      SELECT p.* FROM products p
+      INNER JOIN history h ON p.id = h.product_id
+    ''');
+    return List.generate(maps.length, (i) {
+      return Product.fromMap(maps[i]);
+    });
+  }
+
   Future<List<Product>> getProductsByUser(int userId) async {
     final db = await DatabaseHelper.instance.database;
     
