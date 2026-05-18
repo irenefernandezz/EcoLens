@@ -64,14 +64,6 @@ class HistoryService {
           'fecha_scan': DateTime.now().toIso8601String(),
         },
       );
-    } else {
-
-      await db.update(
-        'history',
-        {'fecha_scan': DateTime.now().toIso8601String()},
-        where: 'user_id = ? AND product_id = ?',
-        whereArgs: [userid, productid],
-      );
     }
   }
 }
