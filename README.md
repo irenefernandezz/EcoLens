@@ -45,6 +45,8 @@ Additionally, users can customize their profile by modifying their username and 
       <br>Users can create an account using their email address and a custom username.
       </sub>
     </td>
+  </tr>
+  <tr>
     <td align="center" style="border:1px solid #ddd; padding:4px;">
       <img width="945" height="2048" alt="WhatsApp Image 2026-05-18 at 15 59 41" src="https://github.com/user-attachments/assets/35d21791-0898-4165-ac15-64ef0903633e" />
       <br>
@@ -59,6 +61,8 @@ Additionally, users can customize their profile by modifying their username and 
         <br>Users can scan product barcodes directly using the device camera. The interface also allows switching to manual barcode input mode.
       </sub>
     </td>
+    </tr>
+    <tr>
       <td align="center" style="border:1px solid #ddd; padding:4px;">
         <img width="1080" height="2340" alt="manualmente" src="https://github.com/user-attachments/assets/a8a43f89-3973-4fca-aedf-73ad039d4a35" />
       <br>
@@ -75,6 +79,8 @@ Additionally, users can customize their profile by modifying their username and 
       </sub>
     </td>
    </td>
+  </tr>
+  <tr>
       <td align="center" style="border:1px solid #ddd; padding:4px;">
         <img width="945" height="2048" alt="rewards2" src="https://github.com/user-attachments/assets/1ef1a155-87e3-401c-80e2-dd548fbd2ebb" />
       <br>
@@ -91,6 +97,8 @@ Additionally, users can customize their profile by modifying their username and 
       </sub>
     </td>
      </td>
+  </tr>
+  <tr>
       <td align="center" style="border:1px solid #ddd; padding:4px;">
         <img width="945" height="2048" alt="WhatsApp Image 2026-05-18 at 15 59 42" src="https://github.com/user-attachments/assets/96616561-c37d-4f3d-838e-df586f645077" />
       <br>
