@@ -49,12 +49,12 @@ class UserService {
       User currentUser = User.fromMap(users.first);
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('username', currentUser.username);
-      _userController.add(currentUser); // Notificar
+      _userController.add(currentUser); //Notificar
       return currentUser;
     } else {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('username');
-      _userController.add(null); // Notificar
+      _userController.add(null);
       return null;
     }
   }
