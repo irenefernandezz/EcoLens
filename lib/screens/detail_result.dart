@@ -147,13 +147,13 @@ class _DetailResult extends State<DetailResult> {
     }
 
     if (co2Value < 3.0) {
-      // De 0 a 2.99... (Verde)
+      // De 0 a 2.99
       return [const Color(0xFF86C28B), const Color(0xFF6DA67A)];
     } else if (co2Value < 6.0) {
-      // De 3.0 a 5.99... (Amarillo)
+      // De 3 a 5.99
       return [const Color(0xFFFFEE58), const Color(0xFFFBC02D)];
     } else {
-      // 6.0 o más (Rojo)
+      // 6 o más
       return [const Color(0xFFE57373), const Color(0xFFD32F2F)];
     }
   }
@@ -239,6 +239,8 @@ class _DetailResult extends State<DetailResult> {
   @override
   Widget build(BuildContext context) {
     // Inicializar la información del porducto extraída de la respuesta de la API y la asignación de colores
+
+    //ecoScore
     String ecoScore;
     if (widget.product.ecoscore_grade == "-1" || widget.product.ecoscore_grade == "") {
       ecoScore = "UNKNOWN";
@@ -247,6 +249,7 @@ class _DetailResult extends State<DetailResult> {
     }
     final ecoColors = color_eco(ecoScore);
 
+    //novaScore
     String novaScore;
     if (widget.product.nova_group == -1) {
       novaScore = "UNKNOWN";
@@ -255,6 +258,7 @@ class _DetailResult extends State<DetailResult> {
     }
     final novaColors = color_nova(novaScore);
 
+    //aditiveScore
     String additiveScore;
     if (widget.product.additives_count == -1) {
       additiveScore = "UNKNOWN";
@@ -263,6 +267,7 @@ class _DetailResult extends State<DetailResult> {
     }
     final additiveColors = color_adittives(additiveScore);
 
+    //palmOilScore
     String palmOilScore;
     if (widget.product.palm_oil_count == -1) {
       palmOilScore = "UNKNOWN";
@@ -271,6 +276,7 @@ class _DetailResult extends State<DetailResult> {
     }
     final palmOilColors = color_palm_oil(palmOilScore);
 
+    //co2Score
     String co2Score;
     if (widget.product.agribalyse.co2Total == -1) {
       co2Score = "UNKNOWN";
@@ -279,6 +285,7 @@ class _DetailResult extends State<DetailResult> {
     }
     final co2Color = color_co2(co2Score);
 
+    //nonRecyclableScore
     String nonRecyclableScore;
     if (widget.product.packaging.nonRecyclable == -1) {
       nonRecyclableScore = "UNKNOWN";
@@ -288,7 +295,7 @@ class _DetailResult extends State<DetailResult> {
     final nonRecyclableColors = color_non_recyclable(nonRecyclableScore);
 
     final double score = widget.product.calculateTotalScore();
-    final bool isScoreValid = score != -1; //-1 significa "sin datos"
+    final bool isScoreValid = score != -1; //-1 significa sin datos suficientes
 
     return Scaffold(
       //Barra superior
@@ -321,6 +328,7 @@ class _DetailResult extends State<DetailResult> {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            //Imagen
             if (widget.product.image_url.isNotEmpty)
               Image.network(
                 widget.product.image_url,
@@ -388,6 +396,7 @@ class _DetailResult extends State<DetailResult> {
                   _buildInfoRow('Non-recyclable materials',
                       nonRecyclableScore, customColors: nonRecyclableColors),
                   const SizedBox(height: 5),
+
                   const Text('Materials list:', style: TextStyle(fontWeight: FontWeight.w600)),
                   const SizedBox(height: 5),
                   RichText(
@@ -418,6 +427,7 @@ class _DetailResult extends State<DetailResult> {
   }
 
   Widget _buildInfoRow(String label, String value, {List<Color>? customColors}) {
+    //Colores previamente calculados
     final bgColor = customColors != null ? customColors[0].withOpacity(0.2) : const Color(0xFF86C28B).withOpacity(0.2);
     final textColor = customColors != null ? customColors[1] : const Color(0xFF6DA67A);
 

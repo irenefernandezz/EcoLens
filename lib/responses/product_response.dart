@@ -1,3 +1,4 @@
+//Clase que recoge los datos de la API de EcoScore
 class ProductResponse {
 
   String name_en;
@@ -8,7 +9,7 @@ class ProductResponse {
   int palm_oil_count;
   String ingredients_text;
   String ecoscore_grade;
-  int nova_group;
+  int nova_group; //grado de procesamiento
   String ingredients_text_en;
 
 
@@ -33,7 +34,6 @@ class ProductResponse {
   factory ProductResponse.fromJson(Map<String, dynamic> json) {
     final product = json['product'] ?? {};
 
-
     final ecoscoreData = product['ecoscore_data'] ?? {};
     final agribalyseData = ecoscoreData['agribalyse'] ?? {};
 
@@ -42,13 +42,13 @@ class ProductResponse {
       name_es: product['product_name_es'] ?? product['product_name'] ?? "",
       brand: product['brands'] ?? "Unknown Brand",
       image_url: product['image_url'] ?? "",
+      //Si no hay datos, los valores numéricos se mapean como -1
       nova_group: product['nova_group'] ?? -1,
       additives_count: product['additives_n'] ?? -1,
       palm_oil_count: product['ingredients_from_or_that_may_be_from_palm_oil_n'] ?? -1,
       ingredients_text: product['ingredients_text'] ?? "",
       ingredients_text_en: product['ingredients_text_en'] ?? "",
       ecoscore_grade: product['ecoscore_grade'] ?? "",
-
 
 
       agribalyse: Agribalyse.fromJson(agribalyseData),
@@ -77,43 +77,42 @@ class ProductResponse {
 
     double score = 10.0;
 
-    // 2. ECOSCORE
+    //ECOSCORE
     switch (ecoscore_grade.toLowerCase()) {
       case 'a': score -= 0; break;
       case 'b': score -= 1; break;
       case 'c': score -= 2; break;
       case 'd': score -= 3; break;
       case 'e': score -= 4; break;
-    // Si es un valor raro o vacío, no restamos pero tampoco garantizamos el 10
     }
 
-    // 3. CO2 EMISSIONS
+    //CO2 EMISSIONS
     if (agribalyse.co2Total != -1) {
       if (agribalyse.co2Total > 5) score -= 2;
       else if (agribalyse.co2Total > 2) score -= 1;
     }
 
-    // 4. NOVA GROUP
+    //NOVA GROUP
     if (nova_group != -1) {
       if (nova_group >= 4) score -= 2;
       else if (nova_group == 3) score -= 1;
     }
 
-    // 5. PALM OIL & ADDITIVES
+    //PALM OIL & ADDITIVES
     if (palm_oil_count > 0) score -= 1;
     if (additives_count != -1) {
       if (additives_count > 5) score -= 2;
       else if (additives_count > 0) score -= 1;
     }
 
-    // 6. PACKAGING IMPACT
+    //PACKAGING IMPACT
     if (packaging.nonRecyclable > 2) score -= 1;
 
-    // 7. INGREDIENTES (Usamos la versión en inglés si existe)
+    //INGREDIENTES (Usar la versión en inglés si existe)
     final keywordsHigh = ['palm oil', 'beef', 'butter', 'carne', 'mantequilla'];
     final keywordsMedium = ['milk', 'cocoa', 'coffee', 'leche', 'cacao', 'café'];
 
-    // Limpiamos el texto para una búsqueda más precisa
+
     String textToSearch = (ingredients_text_en.isNotEmpty
         ? ingredients_text_en
         : ingredients_text)
@@ -126,7 +125,7 @@ class ProductResponse {
       if (textToSearch.contains(kw)) score -= 0.3;
     }
 
-    // 8. MATERIALES (Añadido 'plastic')
+    //MATERIALES
     final redMaterials = ['pvc', 'ps', 'polystyrene', 'plastic', 'plástico'];
     for (var material in packaging.materials) {
       String m = material.toLowerCase();

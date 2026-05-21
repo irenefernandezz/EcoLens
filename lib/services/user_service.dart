@@ -104,7 +104,7 @@ class UserService {
 
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('username');
-    _userController.add(null); // Notificar
+    _userController.add(null); //Notificar
   }
 
   void dispose() {

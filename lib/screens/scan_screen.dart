@@ -28,6 +28,12 @@ class _ScanScreenState extends State<ScanScreen> {
   final ProductService productService = ProductService();
 
   @override
+  void initState() {
+    super.initState();
+    _isProcessing = false;
+  }
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
@@ -39,16 +45,19 @@ class _ScanScreenState extends State<ScanScreen> {
 
       if (!mounted) return;
       
-      Navigator.push(
+      // Esperamos a que el usuario regrese de la pantalla de detalles
+      await Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => DetailResult(product: product)),
       );
 
-      // CUANDO EL USUARIO VUELVE ATRÁS:
-      // Reiniciar el bloqueo para que pueda escanear otro producto
-      setState(() {
-        _isProcessing = false;
-      });
+      // Al volver, permitimos escanear de nuevo
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+          _controller.clear();
+        });
+      }
 
     } catch (e) {
       if (!mounted) return;
@@ -63,7 +72,7 @@ class _ScanScreenState extends State<ScanScreen> {
         }
       });
     }
-    }
+  }
 
   void _showProductNotFoundToast(String barcode) {
     logger.d("Showing product not found toast for $barcode");
@@ -160,6 +169,9 @@ class _ScanScreenState extends State<ScanScreen> {
                           if(_isProcessing) return;
                           //Detectar códigos de barras
                           //vibración
+                          setState(() {
+                            _isProcessing = true;
+                          });
                           Vibration.vibrate(duration: 500);
                           final List<Barcode> barcodes = capture.barcodes;
                           if (barcodes.isNotEmpty && barcodes.first.rawValue != null) {
@@ -214,7 +226,10 @@ class _ScanScreenState extends State<ScanScreen> {
                             icon: const Icon(Icons.arrow_circle_right_rounded,
                                 size: 35, color: Color(0xFF86C28B)),
                             onPressed: () {
-                              if (_controller.text.isNotEmpty) {
+                              if (_controller.text.isNotEmpty && !_isProcessing) {
+                                setState(() {
+                                  _isProcessing = true;
+                                });
                                 _onCodeDetected(_controller.text);
                               }
                             },

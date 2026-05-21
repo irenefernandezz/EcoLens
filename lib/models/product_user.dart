@@ -29,13 +29,4 @@ class Product_user {
       timestamp: DateTime.parse(map['fecha_scan']),
     );
   }
-
-  factory Product_user.fromJson(Map<String, dynamic> json) {
-    return Product_user(
-      id: json['id'],
-      user_id: json['user_id'],
-      product_id: json['product_id'],
-      timestamp: DateTime.parse(json['fecha_scan'] ?? json['timestamp']),
-    );
-  }
 }

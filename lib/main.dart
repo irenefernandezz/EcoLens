@@ -1,9 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:helloworld/screens/history_screen.dart';
 import 'package:helloworld/screens/profile_screen.dart';
 import 'package:helloworld/screens/rewards_screen.dart';
+import 'package:helloworld/screens/eco_tips_screen.dart';
 import 'firebase_options.dart';
 import 'database/initDB.dart';
 import 'services/user_service.dart';
@@ -119,11 +121,11 @@ class _MyAppState extends State<MyApp> {
                   future: UserService().findUser(snapshot.data!.email!),
                   builder: (context, userSnapshot) {
 
-                    // 2. Si el usuario existe, ir a MainScreen
+                    //Si el usuario existe, ir a MainScreen
                     if (userSnapshot.hasData && userSnapshot.data != null) {
                       return MainScreen();
                     } else {
-                      // 3. Si no existe, ir a Login (sin hacer signOut aquí para evitar errores)
+                      //Si no existe, ir a Login
                       return const LoginScreen();
                     }
                   },
@@ -148,7 +150,7 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
   final List<Widget> _screens = [
     const SplashScreen(),
-    const ProfileScreen(),
+    const EcoTipsScreen(),
     const ScanScreen(),
     const RewardsScreen(),
     const HistoryScreen(),
@@ -198,10 +200,11 @@ class _MainScreenState extends State<MainScreen> {
         showUnselectedLabels: false,
         items: [
           _buildNavItem(Icons.home_rounded, 'Home', 0),
-          _buildNavItem(Icons.person_rounded, 'Profile', 1),
+          _buildNavItem(Icons.tips_and_updates_rounded, 'Eco Tips', 1),
           _buildNavItem(Icons.qr_code_scanner_rounded, 'Scan', 2, especial: true),
           _buildNavItem(Icons.emoji_events_rounded, 'Rewards', 3),
           _buildNavItem(Icons.history_rounded, 'History', 4),
+
         ],
       ),
     );
