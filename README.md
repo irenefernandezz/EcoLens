@@ -106,6 +106,13 @@ Additionally, users can customize their profile by modifying their username and 
         <br>Users can modify their profile information, update their profile picture, log out, or permanently delete their account.
       </sub>
     </td>
+    <td align="center" style="border:1px solid #ddd; padding:4px;">
+     <img width="945" height="2048" alt="WhatsApp Image 2026-05-27 at 20 04 06" src="https://github.com/user-attachments/assets/f2e80b3e-a991-4de5-81ae-09c7216d54f4" />
+      <br>
+      <sub>Image 8: Eco-tips Screen.
+        <br>Users can post and read environmental tips.
+      </sub>
+    </td>
   </tr>
 </table>
 
