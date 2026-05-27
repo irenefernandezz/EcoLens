@@ -15,7 +15,7 @@ At its core, the application allows users to scan product barcodes using the dev
 
 In addition to these metrics, each product receives a global environmental rating, helping users quickly evaluate the sustainability of their purchases.
 
-The application also stores a personalized history of scanned products, allowing users to review previous scans and access detailed information about each item at any time.
+The application also stores a personalized history of scanned products, allowing users to review previous scans and access detailed information about each item at any time. In addition, there is a specific screen where users can share environmental tips with each other.
 
 Beyond individual product analysis, EcoLens includes a dedicated statistics section where users can visualize their consumption habits through different metrics and charts. These include:
 
@@ -132,6 +132,7 @@ Additionally, users can customize their profile by modifying their username and 
   - Evolution graphs showing score progression over time
   - Pie charts summarizing scanning trends
   - A recap of the last five scanned products and their ratings
+- Environmental tips: There is a section where users can post any type of environmental tip they wish, and it can be seen by any other user.
 - Gamification System: EcoLens introduces a motivational system where users can compare their environmental performance against global averages and observe improvements in their consumption patterns over time.   
 
 **Technical Features:**
@@ -146,6 +147,7 @@ Additionally, users can customize their profile by modifying their username and 
   - product_user: Relational table connecting users with scanned products and storing scan timestamps.
 - Firebase Integration:
   - Authentication: Supports user registration and login using both Google Sign-In and email/password authentication, maintaining a unique account instance for each user.
+- Real time Firebase database: A database where eco-friendly tips are stored for real-time viewing. Each record includes the username and avatar of the user who made the comment, the tip itself, the date and time, and a list of users who liked the tip.
 - Data Persistence (Local Storage): Uses SharedPreferences for lightweight session management and local storage of user-related information such as usernames and session states.
 - External API Integration: Product information is retrieved through requests to the OpenFoodFacts API. A custom response parsing class has been developed to extract and structure only the relevant environmental and nutritional data required by the application.
 - Dynamic Translation System: Uses the `translator` dependency to automatically translate ingredients, packaging materials, or product-related information whenever the API does not provide the content in English.
@@ -178,7 +180,8 @@ Additionally, users can customize their profile by modifying their username and 
 8. After scanning a product, users can view the product’s and environmental rating
 9. On the Statistics Screen, users can compare their average score with the global average or view their own progression.
 10. On the History Screen, users can access the complete scan history and open detailed information.
-11. On the Profile Screen, users can modify their data, log out or permanently delete their account.
+11. On the eco-tips screen, users can post environmental tips or read those posted by other users and "like" them.
+12. On the Profile Screen, users can modify their data, log out or permanently delete their account.
 
 ## **Participants**
 
